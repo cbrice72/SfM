@@ -1,112 +1,135 @@
 #!/usr/bin/env python3
 
-import cv2
-import getopt
-import os
-import shutil
-import sys
-import time
-
-
-def print_helptext():
-    """
-    Prints the usage explanation for this script.
-    """
-    print("""
+'''
 Usage:
-  ./extract_frames.py -i <input_file> -o [output_dir]
+  ./extract_frames.py -i <input_file>
 
 Flags and Options:
   -h, --help                   Displays this help text.
   -i, --in=PATH     [REQUIRED] Video file to extract frames from.
   -o, --out=PATH               Project directory in which to place folder with extracted frames.
-                                 (default: [video_dir]/images/[video_name]/)
-""")
+                                 (default: same directory as video file)
+  -n, --interval=INT           Number of frames to skip before saving another one.
+                                 (default: video framerate)
+'''
+
+import betterprint  # custom stdout/stderr text formatting
+import cv2          # video handling
+import getopt       # command-line option parsing
+import os           # path management, directory creation
+import shutil       # clearing output folder
+import sys          # retrieving input args, exiting script
+import time         # measuring runtime
 
 
-def main(argv):
+def usage():
     """
-    Makes a clean directory based on the video filename
-    and sequentially extracts video frames to it
+    Prints the usage information for this script and exits.
     """
-    # Variables set via input args
+    print(sys.exit(__doc__))
+
+
+def parse_args(argv):
+    """
+    Parses and validates the input arguments.
+    """
     vid_path = ''
     proj_dir = ''
+    interval = 0
 
-    # Parse input args
-    if len(argv) == 0:
-        print_helptext()
-        sys.exit()
+    # Parse input args according to the options' short and long forms
+    opts, _ = getopt.getopt(
+        argv, 'hi:o:n:', ['help', 'in=', 'out=', 'interval='])
 
-    opts, _ = getopt.getopt(argv, 'hi:', ['help', 'in='])
+    # Validate options
     for opt, arg in opts:
         # Help
         if opt in ('-h', '--help'):
-            print_helptext()
-            sys.exit()
+            usage()
+
         # Input File
         elif opt in ('-i', '--in'):
             vid_path = arg
             if not os.path.isfile(vid_path):
-                print('Invalid input filepath: ' + vid_path)
+                betterprint.err(f'Invalid input filepath: {vid_path}')
                 sys.exit()
+
         # Project Directory (for output)
         elif opt in ('-o', '--out'):
             proj_dir = arg
             if not os.path.isdir(proj_dir):
-                print('Invalid output directory: ' + proj_dir)
+                betterprint.err(f'Invalid output directory: {proj_dir}')
                 sys.exit()
 
-    print('Preparing output directory...')
+        # Frame Interval
+        elif opt in ('-n', '--interval'):
+            if arg.isnumeric():
+                interval = int(arg)
+            else:
+                betterprint.err(
+                    f'Invalid interval (must be an integer): {arg}')
+                sys.exit()
 
-    # By default, use video directory as project root directory
+    # Check for required args (getopt has no concept of "mandatory" options)
+    if not vid_path:
+        usage()
+
+    # Set optional args, if necessary
     if not proj_dir:
+        # By default, use video directory as project root directory
         proj_dir = os.path.dirname(vid_path)
 
+    return vid_path, proj_dir, interval
+
+
+def main(vid_path, proj_dir, interval):
+    """
+    Makes a clean directory based on the video filename
+    and sequentially extracts video frames to it
+    """
     # Initialize project directory
-    out_path = os.path.join(
-        proj_dir, 'images', os.path.basename(vid_path).split('.')[0])
+    betterprint.info('Preparing output directory...')
+    out_path = os.path.join(proj_dir, 'images')
     if os.path.exists(out_path):
         while True:
-            pick = input(
-                '  > This video\'s frames seem to have already been extracted; overwrite? [y/n]  ').lower()
+            pick = betterprint.ask(
+                'This video\'s frames seem to have already been extracted; overwrite? [y/n]').lower()
             if pick == 'y':
                 # Clear project directory
                 shutil.rmtree(out_path)
                 break
             elif pick == 'n':
                 # Avoid overwriting files if user rejects prompt
-                print('  Exiting: user refused overwrite!')
+                betterprint.info('Exiting: user refused overwrite!')
                 sys.exit()
 
     os.makedirs(out_path)
-    print('  Output dir: ' + os.path.abspath(out_path))
-
-    print('Extracting frames...')
+    betterprint.info('Output dir: ' + os.path.abspath(out_path))
 
     # Read video
     vid = cv2.VideoCapture(vid_path)
-
     frame_count = 0
-    frame_total = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_rate = round(vid.get(cv2.CAP_PROP_FPS)
+                       ) if interval == 0 else interval
+    frame_total = round(vid.get(cv2.CAP_PROP_FRAME_COUNT) / frame_rate)
+
     t_start = time.time()  # log start time
-    while True:
-        # Attempt to read next frame
-        ret, frame = vid.read()
-        if not ret:
-            # No frames remaining
-            break
 
-        # Save frame to project directory
-        frame_path = os.path.join(out_path, str(frame_count) + '.jpg')
-        cv2.imwrite(frame_path, frame)
+    with betterprint.status(f'Attempting to extract {frame_total} frames...'):
+        while True:
+            # Attempt to read next frame
+            ret, frame = vid.read()
+            if not ret:
+                # No frames remaining
+                break
 
-        # Output progress
-        print('\r  Progress [%d%%]' %
-              round((float(frame_count) / float(frame_total)) * 100), end="")
+            # Save every n-th frame to project directory
+            if frame_count % frame_rate == 0:
+                frame_path = os.path.join(out_path, str(frame_count) + '.jpg')
+                cv2.imwrite(frame_path, frame)
 
-        # Increment counter
-        frame_count += 1
+            # Increment counter
+            frame_count += 1
 
     t_end = time.time()  # log end time
 
@@ -115,8 +138,9 @@ def main(argv):
     vid.release()
     cv2.destroyAllWindows()
 
-    print('Processed %d frames in %d s!' % (frame_count, t_end - t_start))
+    betterprint.info(
+        f'Processed {frame_count} frames (saved {frame_total} @ n={frame_rate}) in {t_end - t_start:.2f} s!')
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main(parse_args(sys.argv[1:]))
