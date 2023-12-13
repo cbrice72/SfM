@@ -82,11 +82,14 @@ def parse_args(argv):
     return vid_path, proj_dir, interval
 
 
-def main(vid_path, proj_dir, interval):
+def main(argv):
     """
     Makes a clean directory based on the video filename
     and sequentially extracts video frames to it
     """
+    # Parse input args
+    vid_path, proj_dir, interval = parse_args(argv)
+
     # Initialize project directory
     betterprint.info('Preparing output directory...')
     out_path = os.path.join(proj_dir, 'images')
@@ -143,4 +146,4 @@ def main(vid_path, proj_dir, interval):
 
 
 if __name__ == '__main__':
-    main(parse_args(sys.argv[1:]))
+    main(sys.argv[1:])
