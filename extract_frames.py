@@ -56,10 +56,7 @@ def parse_args(argv):
 
         # Project Directory (for output)
         elif opt in ('-o', '--out'):
-            proj_dir = arg
-            if not os.path.isdir(proj_dir):
-                betterprint.err(f'Invalid output directory: {proj_dir}')
-                sys.exit()
+            proj_dir = os.path.abspath(arg)
 
         # Frame Interval
         elif opt in ('-n', '--interval'):
@@ -95,9 +92,14 @@ def main(argv):
     # Parse input args
     vid_path, proj_dir, interval = parse_args(argv)
 
+    # Read video
+    vid = cv2.VideoCapture(vid_path)
+    interval = round(vid.get(cv2.CAP_PROP_FPS)
+                     ) if interval == 0 else interval
+
     # Initialize project directory
     betterprint.info('Preparing output directory...')
-    out_path = os.path.join(proj_dir, 'images')
+    out_path = os.path.join(proj_dir, 'images_n' + str(interval))
     if os.path.exists(out_path):
         while True:
             pick = betterprint.ask(
@@ -112,13 +114,10 @@ def main(argv):
                 sys.exit()
 
     os.makedirs(out_path)
-    betterprint.info('Output dir: ' + os.path.abspath(out_path))
+    betterprint.info('Output dir: ' + out_path)
 
-    # Read video
-    vid = cv2.VideoCapture(vid_path)
+    # Extract frames
     frame_count = 0
-    interval = round(vid.get(cv2.CAP_PROP_FPS)
-                     ) if interval == 0 else interval
     frame_total = round(vid.get(cv2.CAP_PROP_FRAME_COUNT) / interval)
 
     t_start = time.time()  # log start time
