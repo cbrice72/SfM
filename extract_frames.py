@@ -99,7 +99,7 @@ def main(argv):
 
     # Initialize project directory
     betterprint.info('Preparing output directory...')
-    out_path = os.path.join(proj_dir, 'images_n' + str(interval))
+    out_path = os.path.join(proj_dir, 'n' + str(interval), 'images')
     if os.path.exists(out_path):
         while True:
             pick = betterprint.ask(
