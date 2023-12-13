@@ -19,8 +19,8 @@ Usage:
 Flags and Options:
   -h, --help                   Displays this help text.
   -i, --in=PATH     [REQUIRED] Video file to extract frames from.
-  -o, --out=PATH               Directory in which to place folder with extracted frames.
-                                 (default: [video_dir]/frames/[video_name]/)
+  -o, --out=PATH               Project directory in which to place folder with extracted frames.
+                                 (default: [video_dir]/images/[video_name]/)
 """)
 
 
@@ -65,7 +65,7 @@ def main(argv):
 
     # Initialize project directory
     out_path = os.path.join(
-        proj_dir, 'frames', os.path.basename(vid_path).split('.')[0])
+        proj_dir, 'images', os.path.basename(vid_path).split('.')[0])
     if os.path.exists(out_path):
         while True:
             pick = input(
