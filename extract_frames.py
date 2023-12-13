@@ -64,7 +64,12 @@ def parse_args(argv):
         # Frame Interval
         elif opt in ('-n', '--interval'):
             if arg.isnumeric():
-                interval = int(arg)
+                if int(arg) < 1:
+                    betterprint.warn(
+                        f'Invalid interval (must be positive): {arg}; setting to 1...')
+                    interval = 1
+                else:
+                    interval = int(arg)
             else:
                 betterprint.err(
                     f'Invalid interval (must be an integer): {arg}')
@@ -112,9 +117,9 @@ def main(argv):
     # Read video
     vid = cv2.VideoCapture(vid_path)
     frame_count = 0
-    frame_rate = round(vid.get(cv2.CAP_PROP_FPS)
-                       ) if interval == 0 else interval
-    frame_total = round(vid.get(cv2.CAP_PROP_FRAME_COUNT) / frame_rate)
+    interval = round(vid.get(cv2.CAP_PROP_FPS)
+                     ) if interval == 0 else interval
+    frame_total = round(vid.get(cv2.CAP_PROP_FRAME_COUNT) / interval)
 
     t_start = time.time()  # log start time
 
@@ -127,7 +132,7 @@ def main(argv):
                 break
 
             # Save every n-th frame to project directory
-            if frame_count % frame_rate == 0:
+            if frame_count % interval == 0:
                 frame_path = os.path.join(out_path, str(frame_count) + '.jpg')
                 cv2.imwrite(frame_path, frame)
 
@@ -142,7 +147,7 @@ def main(argv):
     cv2.destroyAllWindows()
 
     betterprint.info(
-        f'Processed {frame_count} frames (saved {frame_total} @ n={frame_rate}) in {t_end - t_start:.2f} s!')
+        f'Processed {frame_count} frames (saved {frame_total} @ n={interval}) in {t_end - t_start:.2f} s!')
 
 
 if __name__ == '__main__':
