@@ -50,12 +50,12 @@ Keep the following points in mind when capturing images for SfM generation.
 
 Your project directory should now look similar to this.
 ```txt
-„¥„Ÿ images/
-„    „¥„Ÿ 0.jpg
-„    „¥„Ÿ 1.jpg
-„   ...
-„¥„Ÿ database.db
-„¤„Ÿ project.ini
+|- images/
+|   |- 0.jpg
+|   |- 1.jpg
+|   |- ...
+|- database.db
+|- project.ini
 ```
 
 #### **Quickest Method**
