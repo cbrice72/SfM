@@ -221,13 +221,12 @@ int main(int argc, char** argv) {
 
 ### *Feature Extraction*
 
-- TODO ("Camera type"?)
+- Ensure you are using the most applicable camera model (in GUI: directly under "Camera model", e.g., `SIMPLE_RADIAL`, `SIMPLE_PINHOLE`, etc.).
+- Use the options `--SiftExtraction.estimate_affine_shape=true` and `--SiftExtraction.domain_size_pooling=true`.
 
 ### *Feature Matching*
 
-- Use DSP-SIFT features instead of plain SIFT (TODO: untested)
-- Use the options `--SiftExtraction.estimate_affine_shape=true` and `--SiftExtraction.domain_size_pooling=true` (TODO: untested)
-- Enable "Guided Feature Matching" (TODO: get actual name)
+- Enable "Guided Feature Matching" (in GUI: `guided_matching` under "General Options").
 
 ### *Reconstruction*
 
@@ -241,8 +240,8 @@ image_name3.jpg X3 Y3 Z3
 
 #### **Sparse Reconstruction**
 
-- TODO ("Shared intrinsics"? "Image type"?)
-- Use known camera poses if you have them (see [this FAQ post](https://colmap.github.io/faq.html#reconstruct-sparse-dense-model-from-known-camera-poses))
+- TODO ("Shared intrinsics"? "Image type"?).
+- Use known camera poses if you have them (see [this FAQ post](https://colmap.github.io/faq.html#reconstruct-sparse-dense-model-from-known-camera-poses)).
     - If you're confused about the format of `cameras.txt` and `images.txt`, check out the [Text Format](https://colmap.github.io/format.html#text-format) section of the wiki.
     - Note: if your known camera instrinsics have large distortion coefficients, you must copy the parameters from your `cameras.txt` to the project database using `scripts/python/database.py`.
 

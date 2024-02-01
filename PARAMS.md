@@ -13,13 +13,15 @@ TODO: add command-line version of each setting
 | Parameter | GUI | Command-line |
 |---|---|---|
 | Camera model | SIMPLE_PINHOLE | |
-| Shared for all images | checked | |
+| Shared for all images | true | |
 
 ### *Feature Matching*
 
 | Parameter | GUI | Command-line |
 |---|---|---|
 | Method | Exhaustive | |
+
+#### **Exhaustive Matching**
 
 Default.
 
