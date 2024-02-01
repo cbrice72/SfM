@@ -306,6 +306,9 @@ __pycache__/
 ## SfM
 ###############################################################################
 
+# Microsoft Office temporary files
+~$*
+
 # Windows shortcuts (e.g., to relevant apps like MeshLab)
 **/*.lnk
 
