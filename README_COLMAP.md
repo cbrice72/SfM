@@ -170,7 +170,7 @@ TODO
 
 Before linking against COLMAP, you must first [build it from source](https://colmap.github.io/install.html#build-from-source). Note that if you are on Ubuntu 22.04, you will need to implement some workarounds.
 
-- There is a problem when compiling with UbuntuÅfs default CUDA package and GCC, so you must compile against GCC 10.
+- There is a problem when compiling with Ubuntu's default CUDA package and GCC, so you must compile against GCC 10.
 ```bash
 sudo apt-get install gcc-10 g++-10
 export CC=/usr/bin/gcc-10
@@ -184,6 +184,13 @@ export CUDAHOSTCXX=/usr/bin/g++-10
 #include <boost/bind/bind.hpp>
 
 using namespace boost::placeholders;
+```
+
+- For some reason, the default `CMAKE_CUDA_ARCHITECTURES` option `native` is not recognized during compilation. Specify your [compute capability](https://developer.nvidia.com/cuda-gpus) during CMake generation.
+    - Note: as of 2024/2/20, COLMAP source does not support CUDA architecture 8.9 (`89`) -- use an older version.
+```bash
+# For example: -DCMAKE_CUDA_ARCHITECTURES=75
+cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=[compute_capability]
 ```
 
 #### **Using COLMAP in C++**
