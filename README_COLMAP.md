@@ -1,4 +1,4 @@
-# SfM using COLMAP
+# Using COLMAP
 
 This file contains setup and usage information for COLMAP in the context of the LIBRA project.
 
@@ -15,7 +15,6 @@ Documentation for the COLMAP project can be found [here](https://colmap.github.i
     - [C++ Programming API](#c-programming-api)
 4. [Tips](#tips)
 5. [Troubleshooting](#troubleshooting)
-6. [About Me](#about-me)
 
 ## Setup
 
@@ -167,7 +166,29 @@ TODO
 
 ### *C++ Programming API*
 
-In order to include and link COLMAP in your C++ code, it's best to have a [CMake](https://cmake.org/) project; you may use the one located at `src/tools/exmaple.cc` of the [COLMAP source](https://github.com/colmap/colmap).
+#### **Building COLMAP from Source**
+
+Before linking against COLMAP, you must first [build it from source](https://colmap.github.io/install.html#build-from-source). Note that if you are on Ubuntu 22.04, you will need to implement some workarounds.
+
+- There is a problem when compiling with UbuntuÅfs default CUDA package and GCC, so you must compile against GCC 10.
+```bash
+sudo apt-get install gcc-10 g++-10
+export CC=/usr/bin/gcc-10
+export CXX=/usr/bin/g++-10
+export CUDAHOSTCXX=/usr/bin/g++-10
+# ... and then run CMake against COLMAP's sources.
+```
+
+- During compilation, the Boost library may throw an error about deprecated `Bind` placeholder useage. This must be manually fixed in `src/colmap/exe/sfm.cc` by adding the following lines under the last `#include`.
+```cpp
+#include <boost/bind/bind.hpp>
+
+using namespace boost::placeholders;
+```
+
+#### **Using COLMAP in C++**
+
+In order to include and link against COLMAP in your C++ code, it's best to have a [CMake](https://cmake.org/) project; you may use the one located at `src/tools/exmaple.cc` of the [COLMAP source](https://github.com/colmap/colmap).
 
 You'll need to know the following paths.
 
@@ -307,7 +328,3 @@ In your CPU (RAM)...
 
 - Reduce the patch match cache size via `PatchMatchStereo.cache_size` (specified in GB); note that too low a value might lead to a slower processing time and heavy load on the hard disk
 - Reduce the maximum image size via `--PatchMatchStereo.max_image_size` or `--StereoFusion.max_image_size`
-
-## About Me
-
-**Christian Brice** ([email](mailto:brice.c.aa@m.titech.ac.jp)) is a doctoral student in mechanical engineering at the Tokyo Institute of Technology.
