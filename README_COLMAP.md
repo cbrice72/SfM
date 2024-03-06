@@ -93,76 +93,76 @@ Your project directory should now look similar to this.
 1. Create a project directory and place your images folder inside it.
 2. Open a terminal/PowerShell instance and navigate to the directory where you extracted the ZIP file from [Setup](#setup). There should be a file named `COLMAP.bat`.
 3. Set the following environment variable for ease of use in later commands.
-```bash
-$Env:WS_PATH = "[path/to/workspace/folder]"
-```
+    ```bash
+    $Env:WS_PATH = "[path/to/workspace/folder]"
+    ```
 
 #### **Quickest Method**
 
 4. Simply run the automatic reconstruction. (TODO: untested)
-```bash
-.\COLMAP.bat automatic_reconstructor `
-    --workspace_path $Env:WS_PATH `
-    --image_path $Env:WS_PATH/images
-```
+    ```bash
+    .\COLMAP.bat automatic_reconstructor `
+        --workspace_path $Env:WS_PATH `
+        --image_path $Env:WS_PATH/images
+    ```
 
 #### **Full Process**
 
 4. Extract features.
-```bash
-.\COLMAP.bat feature_extractor `
-    --database_path $Env:WS_PATH/database.db `
-    --image_path $Env:WS_PATH/images
-```
+    ```bash
+    .\COLMAP.bat feature_extractor `
+        --database_path $Env:WS_PATH/database.db `
+        --image_path $Env:WS_PATH/images
+    ```
 
 5. Match features.
-```bash
-.\COLMAP.bat exhaustive_matcher `
-    --database_path $Env:WS_PATH/database.db
-```
+    ```bash
+    .\COLMAP.bat exhaustive_matcher `
+        --database_path $Env:WS_PATH/database.db
+    ```
 
 6. Run the sparse reconstruction.
-```bash
-mkdir $Env:WS_PATH/sparse
-
-.\COLMAP.bat mapper `
-    --database_path $Env:WS_PATH/database.db `
-    --image_path $Env:WS_PATH/images `
-    --output_path $Env:WS_PATH/sparse
-```
+    ```bash
+    mkdir $Env:WS_PATH/sparse
+    
+    .\COLMAP.bat mapper `
+        --database_path $Env:WS_PATH/database.db `
+        --image_path $Env:WS_PATH/images `
+        --output_path $Env:WS_PATH/sparse
+    ```
 
 7. Run the dense reconstruction. (TODO: untested)
-```bash
-mkdir $DATASET_PATH/dense
-
-.\COLMAP.bat image_undistorter `
-    --image_path $Env:WS_PATH/images `
-    --input_path $Env:WS_PATH/sparse/0 `
-    --output_path $Env:WS_PATH/dense `
-    --output_type COLMAP `                    # optional
-    --max_image_size 2000                     # optional
-
-.\COLMAP.bat patch_match_stereo `
-    --workspace_path $Env:WS_PATH/dense `
-    --workspace_format COLMAP `               # optional
-    --PatchMatchStereo.geom_consistency true  # optional
-
-.\COLMAP.bat stereo_fusion `
-    --workspace_path $Env:WS_PATH/dense `
-    --output_path $Env:WS_PATH/dense/fused.ply `
-    --workspace_format COLMAP `               # optional
-    --input_type geometric                    # optional
-```
+    ```bash
+    mkdir $DATASET_PATH/dense
+    
+    .\COLMAP.bat image_undistorter `
+        --image_path $Env:WS_PATH/images `
+        --input_path $Env:WS_PATH/sparse/0 `
+        --output_path $Env:WS_PATH/dense `
+        --output_type COLMAP `                    # optional
+        --max_image_size 2000                     # optional
+    
+    .\COLMAP.bat patch_match_stereo `
+        --workspace_path $Env:WS_PATH/dense `
+        --workspace_format COLMAP `               # optional
+        --PatchMatchStereo.geom_consistency true  # optional
+    
+    .\COLMAP.bat stereo_fusion `
+        --workspace_path $Env:WS_PATH/dense `
+        --output_path $Env:WS_PATH/dense/fused.ply `
+        --workspace_format COLMAP `               # optional
+        --input_type geometric                    # optional
+    ```
 
 8. [OPTIONAL] Run the Poisson mesher.
-```bash
-TODO
-```
+    ```bash
+    TODO
+    ```
 
 9. [OPTIONAL] Run the Delaunay mesher.
-```bash
-TODO
-```
+    ```bash
+    TODO
+    ```
 
 ### *C++ Programming API*
 
@@ -173,20 +173,20 @@ First, ensure you have the CUDA toolkit/compiler installed on your system. If yo
 Before linking against COLMAP, you must first [build it from source](https://colmap.github.io/install.html#build-from-source). Note that if you are on Ubuntu 22.04, you will need to implement some workarounds.
 
 - There is a problem when compiling with Ubuntu's default CUDA package and GCC, so you must compile against GCC 10.
-```bash
-sudo apt-get install gcc-10 g++-10
-export CC=/usr/bin/gcc-10
-export CXX=/usr/bin/g++-10
-export CUDAHOSTCXX=/usr/bin/g++-10
-# ... and then run CMake against COLMAP's sources.
-```
+    ```bash
+    sudo apt-get install gcc-10 g++-10
+    export CC=/usr/bin/gcc-10
+    export CXX=/usr/bin/g++-10
+    export CUDAHOSTCXX=/usr/bin/g++-10
+    # ... and then run CMake against COLMAP's sources.
+    ```
 
 - During compilation, the Boost library may throw an error about deprecated `Bind` placeholder useage. This must be manually fixed in `src/colmap/exe/sfm.cc` by adding the following lines under the last `#include`.
-```cpp
-#include <boost/bind/bind.hpp>
-
-using namespace boost::placeholders;
-```
+    ```cpp
+    #include <boost/bind/bind.hpp>
+    
+    using namespace boost::placeholders;
+    ```
 
 - If you are getting an error about CUDA architecture (specifically that `compute_native` isn't recognized), ensure there are no versions of the CUDA toolkit older than 12.3 installed on your system. See [this GitHub issue thread](https://github.com/ggerganov/llama.cpp/issues/1940) for more information.
 
@@ -256,12 +256,12 @@ int main(int argc, char** argv) {
 ### *Reconstruction*
 
 - Geo-registration is possible by providing the 3D centers of a camera for three or more images. The coordinates can be either cartesian (`x y z`) or GPS (`lat lon alt`); note that if you use GPS coordinates you will have to specify additional conversion settings (see [this FAQ post](https://colmap.github.io/faq.html#geo-registration)).
-```txt
-image_name1.jpg X1 Y1 Z1
-image_name2.jpg X2 Y2 Z2
-image_name3.jpg X3 Y3 Z3
-...
-```
+    ```txt
+    image_name1.jpg X1 Y1 Z1
+    image_name2.jpg X2 Y2 Z2
+    image_name3.jpg X3 Y3 Z3
+    ...
+    ```
 
 #### **Sparse Reconstruction**
 
