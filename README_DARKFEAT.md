@@ -62,7 +62,7 @@ The following is a more granular, step-by-step explanation based on the instruct
     ./download_data.sh tourism_imgs 0 29
     ```
 
-    - For the `gl3d_imgs` dataset, since `Chunk Start` and `Chunk End` aren't provided you must manually download it via the URL in the GL3D `README.md` "Downloads" section.
+    - For the `gl3d_imgs` dataset, since `CHUNK_START` and `CHUNK_END` aren't provided you must manually download it via the URL in the GL3D `README.md` "Downloads" section.
 
 The GL3D hyperparameters (in the `configs/` directory) can be configured as follows:
 - TODO
