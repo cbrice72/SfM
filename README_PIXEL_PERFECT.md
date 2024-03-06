@@ -20,9 +20,9 @@ Before building `pixsfm`, you must first [build COLMAP **3.8** from source](http
 Follow the instructions in the `pixsfm` `README.md`. At the `pip install -r requirements.txt` step, you may have to do the following.
 
 - The `Eigen` package does not set up a default symbolic link. You must create one in order for libraries that use Eigen to reference its header files.
-```bash
-sudo ln -s /usr/include/eigen3/Eigen/ /usr/include/Eigen
-```
+    ```bash
+    sudo ln -s /usr/include/eigen3/Eigen/ /usr/include/Eigen
+    ```
 
 ## Usage
 
