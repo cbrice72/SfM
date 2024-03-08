@@ -54,15 +54,15 @@ The matched pictures (with # of matches in the top left) in the `output/` direct
 
 The following is a more granular, step-by-step explanation based on the instructions in the DarkFeat `README.md` "Training from scratch" section.
 
-1. Download the Tourism and GL3D datasets.
+1. Clone the GL3D repository and navigate to it.
     ```bash
     git clone https://github.com/lzx551402/GL3D.git
     cd GL3D
-    # Usage: download_data.sh DATA_NAME CHUNK_START CHUNK_END
-    ./download_data.sh tourism_imgs 0 29
     ```
 
-    - For the `gl3d_imgs` dataset, since `CHUNK_START` and `CHUNK_END` aren't provided you must manually download it via the URL in the GL3D `README.md` "Downloads" section.
+2. Download the [GL3D dataset](https://1drv.ms/u/s!Anl8gFgW1C7LknxGy1gesj30SQ1I?e=RTT6re) (see GL3D `README.md` "Downloads" section) and extract it into the `data/` directory.
+
+...
 
 The GL3D hyperparameters (in the `configs/` directory) can be configured as follows:
 - TODO
