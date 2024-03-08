@@ -23,4 +23,3 @@
 | Components | | |
 |---|---|---|
 | GL3D | gl3d_imgs | 1000x1000 undistorted images of GL3D |
-| tourism | tourism_imgs | 1000x1000 undistorted images of tourism dataset |
