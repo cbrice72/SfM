@@ -174,11 +174,15 @@ Before linking against COLMAP, you must first [build it from source](https://col
 
 - There is a problem when compiling with Ubuntu's default CUDA package and GCC, so you must compile against GCC 10.
     ```bash
+    # There is a problem when compiling with Ubuntu 22.04's default CUDA package and GCC; implement a workaround
     sudo apt-get install gcc-10 g++-10
     export CC=/usr/bin/gcc-10
     export CXX=/usr/bin/g++-10
     export CUDAHOSTCXX=/usr/bin/g++-10
-    # ... and then run CMake against COLMAP's sources.
+    # Run CMake against COLMAP's sources and build
+    cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=75
+    ninja
+    sudo ninja install
     ```
 
 - During compilation, the Boost library may throw an error about deprecated `Bind` placeholder useage. This must be manually fixed in `src/colmap/exe/sfm.cc` by adding the following lines under the last `#include`.
