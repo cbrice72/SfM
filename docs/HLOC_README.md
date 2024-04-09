@@ -27,13 +27,8 @@ Simply follow the instructions in the `hloc` repo's `README.md`.
 
 #### **Tutorials (Jupyter Notebooks)**
 
-There are some very well-made interactive tutorials in the Jupyter notebooks (file type: `.ipynb`) included in the root `Hierarchical-Localization` directory.
+There are some very well-made interactive tutorials in the form of Jupyter notebooks included in the root directory of the `hloc` repo.
 You can run through the code in these notebooks step by step to better understand `hloc`'s SfM workflow and Python API.
-
-- `demo.ipynb`: 3D map creation and subsequent localization of arbitrary image; i.e., figuring out where it was taken in relation to the map.
-- `pipeline_Aachen.ipynb`: Pipeline for outdoor (day/night) localization, given an existing [NVM](http://ccwu.me/vsfm/index.html) database.
-- `pipeline_InLoc.ipynb`: Pipeline for indoor localization, given an existing [NVM](http://ccwu.me/vsfm/index.html) database.
-- `pipeline_SfM.ipynb`: General SfM pipeline (images -> feature extraction & matching -> visualization), from scratch.
 
 ```bash
 # Ensure Jupyter is installed
@@ -41,6 +36,13 @@ pip install jupyterlab
 # Start the Jupyter server, then open the web address it prints in the command line to access the notebooks
 jupyter lab
 ```
+
+|Notebook|Description|
+|---|---|
+|`demo.ipynb`|3D map creation and subsequent localization of arbitrary image; i.e., figuring out where it was taken in relation to the map.|
+|`pipeline_Aachen.ipynb`|Pipeline for outdoor (day/night) localization, given an existing [NVM](http://ccwu.me/vsfm/index.html) database.|
+|`pipeline_InLoc.ipynb`|Pipeline for indoor localization, given an existing [NVM](http://ccwu.me/vsfm/index.html) database.|
+|`pipeline_SfM.ipynb`|General SfM pipeline (images -> feature extraction & matching -> visualization), from scratch.|
 
 #### **Minimal Script**
 
@@ -51,13 +53,13 @@ from pathlib import Path
 from hloc import (
     extract_features,
     match_features,
-    reconstruction,
-    visualization,
     pairs_from_retrieval,
+    reconstruction,
+    visualization
 )
 
 # Set input path
-images = Path("datasets/South-Building/images/")
+images = Path("path/to/images/")
 
 # Set output paths
 outputs = Path("outputs/sfm/")
@@ -71,7 +73,8 @@ matcher_conf = match_features.confs["superglue"]  # for local features
 
 # Find image pairs via image retrieval
 retrieval_path = extract_features.main(retrieval_conf, images, outputs)
-pairs_from_retrieval.main(retrieval_path, sfm_pairs, num_matched=5)  # for smaller datasets, consider using `hloc/pairs_from_exhaustive.py`
+# NOTE: for smaller datasets, consider using `hloc/pairs_from_exhaustive.py`
+pairs_from_retrieval.main(retrieval_path, sfm_pairs, num_matched=5)
 
 # Extract and match local features
 feature_path = extract_features.main(feature_conf, images, outputs)
@@ -88,17 +91,18 @@ visualization.visualize_sfm_2d(model, images, color_by="depth", n=5)
 
 #### **Specifying Camera Parameters**
 
-The name of the camera models and their parameters are defined by COLMAP. Python API:
+If the calibration of the camera is known, for example from an external calibration system, you can tell hloc to use these parameters instead of estimating them from EXIF.
 
+```py
 opts = dict(camera_model='SIMPLE_RADIAL', camera_params=','.join(map(str, (f, cx, cy, k))))
 model = reconstruction.main(..., image_options=opts)
-Command-line interface:
+```
 
-python -m hloc.reconstruction [...] --image_options camera_model='"SIMPLE_RADIAL"' camera_params='"256,256,256,0"'
 By default, hloc refines the camera parameters during the reconstruction process. To prevent this, add:
 
+```py
 reconstruction.main(..., mapper_options=dict(ba_refine_focal_length=False, ba_refine_extra_params=False))
-python -m hloc.reconstruction [...] --mapper_options ba_refine_focal_length=False ba_refine_extra_params=False
+```
 
 ## Tips
 
