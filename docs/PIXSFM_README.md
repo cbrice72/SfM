@@ -24,6 +24,8 @@ Follow the instructions in the `pixsfm` `README.md`. At the `pip install -r requ
     sudo ln -s /usr/include/eigen3/Eigen/ /usr/include/Eigen
     ```
 
+**NOTE: I wasn't able to install it without destroying my working COLMAP 10 installation, and I wasn't able to install COLMAP 8 locally...**
+
 ## Usage
 
 ### *Command-line Application*
