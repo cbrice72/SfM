@@ -317,3 +317,6 @@ __pycache__/
 
 # Output from ./extract_frames.py
 data/*
+
+# Output from hloc
+**/outputs/*
