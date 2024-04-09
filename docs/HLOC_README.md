@@ -146,6 +146,8 @@ Further reading: https://colmap.github.io/cameras.html
 
 ### *Visualizations aren't showing, but Python doesn't throw any errors (WSL2)*
 
+The following is summarized from [this Stack Overflow post](https://stackoverflow.com/questions/43397162/show-matplotlib-plots-and-other-gui-in-ubuntu-wsl1-wsl2).
+
 #### **In a WSL2 terminal:**
 
 1. Install the relevant `python3.*-tk` package and the Python `matplotlib` package.
