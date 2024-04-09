@@ -94,7 +94,7 @@ Your project directory should now look similar to this.
 2. Open a terminal/PowerShell instance and navigate to the directory where you extracted the ZIP file from [Setup](#setup). There should be a file named `COLMAP.bat`.
 3. Set the following environment variable for ease of use in later commands.
     ```bash
-    $Env:WS_PATH = "[path/to/workspace/folder]"
+    $Env:WS_PATH = "<path/to/workspace/folder>"
     ```
 
 #### **Quickest Method**
