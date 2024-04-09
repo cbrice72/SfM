@@ -5,6 +5,7 @@ from hloc import (
     extract_features,
     match_features,
     pairs_from_exhaustive,
+    pairs_from_retrieval,
     reconstruction,
     visualization
 )
@@ -33,7 +34,8 @@ sfm_dir = outputs / ("sfm_" + sel_extraction + "+" + sel_matching)
 
 # Find image pairs via image retrieval
 retrieval_path = extract_features.main(retrieval_conf, images, outputs)
-pairs_from_exhaustive.main(retrieval_path, sfm_pairs, num_matched=5)
+pairs_from_retrieval.main(retrieval_path, sfm_pairs, num_matched=5)
+# pairs_from_exhaustive.main(sfm_pairs)
 
 # Extract and match local features
 feature_path = extract_features.main(extraction_conf, images, outputs)
