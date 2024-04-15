@@ -16,6 +16,7 @@ Flags and Options:
   -h, --help                      Displays this help text.
   -i, --in=PATH        [REQUIRED] Directory containing input images for SfM (alternatively, a valid shortcut).
   -o, --out=PATH                  Directory for saving SfM data to.
+  --use-defaults                  Uses default pipeline configuration (skips any user input).
   -r, --retriever=STR             Image retriever (for finding global descriptors).
   -f, --features=STR              Feature extractor.
   -m, --matcher=STR               Feature matcher.
@@ -73,16 +74,23 @@ def parse_args(argv):
     """
     Parses and validates input arguments for this script.
     """
+    # Default args
     image_dir = ''
     output_dir = ''
-    retrieval_type = ''
-    feature_type = ''
-    matching_type = ''
+    use_defaults = False
+    retrieval_type = 'netvlad'
+    feature_type = 'disk'
+    matching_type = 'disk+lightglue'
     query = ''
+
+    # Parsing helpers
+    retrieval_type_provided = False
+    feature_type_provided = False
+    matching_type_provided = False
 
     # Parse input args according to the options' short and long forms
     opts, _ = getopt.getopt(
-        argv, 'hi:o:r:f:m:q:', ['help', 'in=', 'out=', 'retriever=', 'features=', 'matcher=', 'query='])
+        argv, 'hi:o:r:f:m:q:', ['help', 'in=', 'out=', 'use-defaults', 'retriever=', 'features=', 'matcher=', 'query='])
 
     # Validate options
     for opt, arg in opts:
@@ -106,9 +114,14 @@ def parse_args(argv):
         elif opt in ('-o', '--out'):
             output_dir = Path(f'outputs/{arg}/').resolve()
 
+        # "Use Defaults" Flag
+        elif opt in ('--use-defaults'):
+            use_defaults = True
+
         # Image Retrieval Config
         elif opt in ('-r', '--retriever'):
             retrieval_type = arg
+            retrieval_type_provided = True
             if retrieval_type not in extract_features.confs:
                 betterprint.err('Unsupported image retriever: '
                                 + retrieval_type)
@@ -117,6 +130,7 @@ def parse_args(argv):
         # Feature Extraction Config
         elif opt in ('-f', '--features'):
             feature_type = arg
+            feature_type_provided = True
             if feature_type not in extract_features.confs:
                 betterprint.err('Unsupported feature extractor: '
                                 + feature_type)
@@ -125,6 +139,7 @@ def parse_args(argv):
         # Feature Matching Config
         elif opt in ('-m', '--matcher'):
             matching_type = arg
+            matching_type_provided = True
             if matching_type not in match_features.confs:
                 betterprint.err('Unsupported feature matcher: '
                                 + matching_type)
@@ -148,20 +163,54 @@ def parse_args(argv):
         betterprint.warn(
             f'Output directory not specified; defaulting to {output_dir}')
 
-    if not retrieval_type:
-        sel = betterprint.ask(
-            'Please select a retriever (default: netvlad).').lower()
-        retrieval_type = 'netvlad' if not sel else sel
+    if not use_defaults:
+        # User input for selecting a retriever
+        while not retrieval_type_provided:
+            sel = betterprint.ask(
+                'Please select a retriever (default: netvlad).').lower()
+            if not sel:
+                # Empty input
+                betterprint.err(
+                    'You must select a retriever! To just use defaults, pass the --use-defaults flag.')
+            elif sel not in extract_features.confs:
+                # Invalid retriever
+                betterprint.err('Unsupported image retriever: ' + sel)
+            else:
+                # Valid retriever
+                retrieval_type = sel
+                retrieval_type_provided = True
 
-    if not feature_type:
-        sel = betterprint.ask(
-            'Please select an extractor (default: disk).').lower()
-        feature_type = 'disk' if not sel else sel
+        # User input for selecting a feature extractor
+        while not feature_type_provided:
+            sel = betterprint.ask(
+                'Please select an extractor (default: disk).').lower()
+            if not sel:
+                # Empty input
+                betterprint.err(
+                    'You must select an extractor! To just use defaults, pass the --use-defaults flag.')
+            elif sel not in extract_features.confs:
+                # Invalid retriever
+                betterprint.err('Unsupported feature extractor: ' + sel)
+            else:
+                # Valid extractor
+                feature_type = sel
+                feature_type_provided = True
 
-    if not matching_type:
-        sel = betterprint.ask(
-            'Please select a matcher (default: disk+lightglue).').lower()
-        matching_type = 'disk+lightglue' if not sel else sel
+        # User input for selecting a feature matcher
+        while not matching_type_provided:
+            sel = betterprint.ask(
+                'Please select a matcher (default: disk+lightglue).').lower()
+            if not sel:
+                # Empty input
+                betterprint.err(
+                    'You must select a matcher! To just use defaults, pass the --use-defaults flag.')
+            elif sel not in match_features.confs:
+                # Invalid retriever
+                betterprint.err('Unsupported feature matcher: ' + sel)
+            else:
+                # Valid matcher
+                matching_type = sel
+                matching_type_provided = True
 
     return image_dir, output_dir, retrieval_type, feature_type, matching_type, query
 
@@ -227,15 +276,15 @@ class HlocSfm:
         ret, log = pose_from_cluster(
             localizer, query, camera, ref_ids, self.features, self.matches)
 
-        betterprint.info(f'''Found {ret["num_inliers"]}/{len(ret["inliers"])}
-                            inlier correspondences''')
+        betterprint.info(
+            f'Found {ret["num_inliers"]}/{len(ret["inliers"])} inlier correspondences')
 
         # Visualize localization of query relative to original dataset
         betterprint.info('Generating 2D visualization...')
         sleep(1)
 
-        visualization.visualize_loc_from_log(
-            self.image_dir, query, log, self.model)  # doesn't show in WSL2
+        visualization.visualize_loc_from_log(  # doesn't show in WSL2
+            self.image_dir, query, log, self.model)
         viz.save_plot(self.output_dir / 'visualization_query-2D.pdf')
 
         betterprint.info('Generating 3D visualization...')
@@ -296,38 +345,31 @@ class HlocSfm:
         betterprint.info('Generating 2D visualization...')
         sleep(1)
 
+        # TODO: for some reason, save_plot() below only saves the last selected picture
+
         # Note: explanation of keypoint visualization types (using color_by)
         # - 'visibility': blue if successfully triangulated, red if never matched
         # - 'track_length': red if observed many times, blue if few
         # - 'depth': red if relatively far away, blue if closer
-        betterprint.warn('entering visualize_sfm_2d() for visibility')
-        visualization.visualize_sfm_2d(
-            self.model, self.image_dir, color_by='visibility', selected=[2, 4, 6], n=3)
-        betterprint.warn('passed visualize_sfm_2d() for visibility')
+        visualization.visualize_sfm_2d(  # doesn't show in WSL2
+            self.model, self.image_dir, color_by='visibility', selected=[2, 12, 20], n=3)
         viz.save_plot(self.output_dir / 'visualization_2D-vis.pdf')
 
-        betterprint.warn('entering visualize_sfm_2d() for track_length')
-        visualization.visualize_sfm_2d(
-            self.model, self.image_dir, color_by='track_length', selected=[2, 4, 6], n=3)
-        betterprint.warn('passed visualize_sfm_2d() for track_length')
+        visualization.visualize_sfm_2d(  # doesn't show in WSL2
+            self.model, self.image_dir, color_by='track_length', selected=[2, 12, 20], n=3)
         viz.save_plot(self.output_dir / 'visualization_2D-tracklen.pdf')
 
-        betterprint.warn('entering visualize_sfm_2d() for depth')
-        visualization.visualize_sfm_2d(
-            self.model, self.image_dir, color_by='depth', selected=[2, 4, 6], n=3)
-        betterprint.warn('passed visualize_sfm_2d() for depth')
+        visualization.visualize_sfm_2d(  # doesn't show in WSL2
+            self.model, self.image_dir, color_by='depth', selected=[2, 12, 20], n=3)
         viz.save_plot(self.output_dir / 'visualization_2D-depth.pdf')
 
         betterprint.info('Generating 3D visualization...')
         sleep(1)
 
         fig = viz_3d.init_figure()
-        betterprint.warn('passed init_figure()')
         viz_3d.plot_reconstruction(
             fig, self.model, color='rgba(255,0,0,0.5)', name='mapping')
-        betterprint.warn('passed plot_reconstruction()')
         fig.write_html(self.output_dir / 'visualization_3D.html')
-        betterprint.warn('passed write_html()')
         fig.show()  # doesn't show in WSL2
 
         betterprint.info('Done!')
