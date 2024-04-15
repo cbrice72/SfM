@@ -352,15 +352,15 @@ class HlocSfm:
         # - 'track_length': red if observed many times, blue if few
         # - 'depth': red if relatively far away, blue if closer
         visualization.visualize_sfm_2d(  # doesn't show in WSL2
-            self.model, self.image_dir, color_by='visibility', selected=[2, 12, 20], n=3)
+            self.model, self.image_dir, color_by='visibility', selected=[5], n=1)
         viz.save_plot(self.output_dir / 'visualization_2D-vis.pdf')
 
         visualization.visualize_sfm_2d(  # doesn't show in WSL2
-            self.model, self.image_dir, color_by='track_length', selected=[2, 12, 20], n=3)
+            self.model, self.image_dir, color_by='track_length', selected=[5], n=1)
         viz.save_plot(self.output_dir / 'visualization_2D-tracklen.pdf')
 
         visualization.visualize_sfm_2d(  # doesn't show in WSL2
-            self.model, self.image_dir, color_by='depth', selected=[2, 12, 20], n=3)
+            self.model, self.image_dir, color_by='depth', selected=[5], n=1)
         viz.save_plot(self.output_dir / 'visualization_2D-depth.pdf')
 
         betterprint.info('Generating 3D visualization...')
