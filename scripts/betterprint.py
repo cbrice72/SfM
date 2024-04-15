@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+###############################################################################
+# @file   betterprint.py
+# @brief  Enhance command line printing based on information categories.
+#
+# @author brice.c.aa
+# @date   2024/4/15
+###############################################################################
+
 import os
 from rich.console import Console
 from rich.markup import escape

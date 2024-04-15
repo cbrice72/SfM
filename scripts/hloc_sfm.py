@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+###############################################################################
+# @file   hloc_sfm.py
+# @brief  LIBRA project SfM pipeline using hloc.
+#
+# @author brice.c.aa
+# @date   2024/4/15
+###############################################################################
+
 '''
 Usage:
   ./hloc_sfm.py

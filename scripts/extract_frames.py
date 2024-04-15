@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+###############################################################################
+# @file   extract_frames.py
+# @brief  Extract frames from a video at a certain interval.
+#
+# @author brice.c.aa
+# @date   2024/4/15
+###############################################################################
+
 '''
 Usage:
   ./extract_frames.py -i <input_file>
