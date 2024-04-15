@@ -310,13 +310,14 @@ __pycache__/
 ~$*
 
 # Windows shortcuts (e.g., to relevant apps like MeshLab)
-**/*.lnk
+*.lnk
 
 # COLMAP pre-built binary folder
-**/COLMAP-*/*
+COLMAP-*/*
 
-# Output from ./extract_frames.py
-data/*
-
-# Output from hloc
-**/outputs/*
+# Output from hloc (except for visualizations, i.e., .pdf and .html)
+scripts/outputs/**/sfm*
+scripts/outputs/**/features*
+scripts/outputs/**/global-feats*
+scripts/outputs/**/matches*
+scripts/outputs/**/pairs*
