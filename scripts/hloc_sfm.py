@@ -19,7 +19,7 @@ Flags and Options:
   -r, --retriever=STR             Image retriever (for finding global descriptors).
   -f, --features=STR              Feature extractor.
   -m, --matcher=STR               Feature matcher.
-  -q, --query=PATH                Path to a query image that will be matched against an existing database.
+  -q, --query=PATH                Query image to be matched against resulting 3D map.
 '''
 
 import betterprint  # local module
@@ -179,10 +179,15 @@ class HlocSfm:
                            for p in (self.image_dir).iterdir()]
 
         # Set output paths
+        # - Top `k` pairs retrieved from global descriptors (default: k=10)
         self.sfm_pairs = self.output_dir / (f'pairs-{r}-sfm.txt')
+        # - All query pairs retrieved from exhaustive matching
         self.loc_pairs = self.output_dir / (f'pairs-{r}-loc.txt')
+        # - HDF database for all extracted features
         self.features = self.output_dir / (f'features-{f}.h5')
+        # - HDF database for all matched features
         self.matches = self.output_dir / (f'matches-{m}.h5')
+        # - Resulting SfM model
         self.sfm_dir = self.output_dir / (f'sfm_{f}-with-{m}')
 
         # Declare member variables that will be initialized later
@@ -253,15 +258,18 @@ class HlocSfm:
         and sequentially extracts video frames to it
         """
         # Find image pairs via image retrieval
+        # Note: divided into "large dataset" and "small dataset" actions
         betterprint.info('Starting image retrieval...')
         sleep(1)
 
-        if len(self.references) > 50:
-            # Large dataset (see below for Small): match based on descriptors
+        if len(self.references) > 50:  # large dataset (see below for small): match based on descriptors
             global_descriptors = extract_features.main(
                 self.retrieval_conf, self.image_dir, self.output_dir)
+            # Larger `k` (num_matched) improves robustness of localization for
+            # difficult queries but makes matching more expensive.
+            # Using `k` between 10-20 is generally a good tradeoff.
             pairs_from_retrieval.main(
-                global_descriptors, self.sfm_pairs, num_matched=5)
+                global_descriptors, self.sfm_pairs, num_matched=10)
 
         # Extract and match local features
         betterprint.info('Starting feature extraction and matching...')
@@ -270,8 +278,7 @@ class HlocSfm:
         extract_features.main(self.feature_conf, self.image_dir, export_dir=self.output_dir,
                               image_list=self.references, feature_path=self.features)
 
-        if len(self.references) <= 50:
-            # Small dataset (see above for Large): match exhaustively
+        if len(self.references) <= 50:  # small dataset (see above for large): match exhaustively
             pairs_from_exhaustive.main(
                 self.sfm_pairs, image_list=self.references)
 
@@ -282,25 +289,45 @@ class HlocSfm:
         betterprint.info('Starting reconstruction...')
         sleep(1)
 
-        model = reconstruction.main(self.sfm_dir, self.image_dir, self.sfm_pairs,
-                                    self.features, self.matches, verbose=True, image_list=self.references)
+        self.model = reconstruction.main(self.sfm_dir, self.image_dir, self.sfm_pairs,
+                                         self.features, self.matches, image_list=self.references)
 
         # Visualize results
         betterprint.info('Generating 2D visualization...')
         sleep(1)
 
-        # Note: also color_by='visibility' or 'track_length'
+        # Note: explanation of keypoint visualization types (using color_by)
+        # - 'visibility': blue if successfully triangulated, red if never matched
+        # - 'track_length': red if observed many times, blue if few
+        # - 'depth': red if relatively far away, blue if closer
+        betterprint.warn('entering visualize_sfm_2d() for visibility')
         visualization.visualize_sfm_2d(
-            model, self.image_dir, color_by='depth', n=3)  # doesn't show in WSL2
-        viz.save_plot(self.output_dir / 'visualization_2D.pdf')
+            self.model, self.image_dir, color_by='visibility', selected=[2, 4, 6], n=3)
+        betterprint.warn('passed visualize_sfm_2d() for visibility')
+        viz.save_plot(self.output_dir / 'visualization_2D-vis.pdf')
+
+        betterprint.warn('entering visualize_sfm_2d() for track_length')
+        visualization.visualize_sfm_2d(
+            self.model, self.image_dir, color_by='track_length', selected=[2, 4, 6], n=3)
+        betterprint.warn('passed visualize_sfm_2d() for track_length')
+        viz.save_plot(self.output_dir / 'visualization_2D-tracklen.pdf')
+
+        betterprint.warn('entering visualize_sfm_2d() for depth')
+        visualization.visualize_sfm_2d(
+            self.model, self.image_dir, color_by='depth', selected=[2, 4, 6], n=3)
+        betterprint.warn('passed visualize_sfm_2d() for depth')
+        viz.save_plot(self.output_dir / 'visualization_2D-depth.pdf')
 
         betterprint.info('Generating 3D visualization...')
         sleep(1)
 
         fig = viz_3d.init_figure()
+        betterprint.warn('passed init_figure()')
         viz_3d.plot_reconstruction(
-            fig, model, color='rgba(255,0,0,0.5)', name='mapping')
+            fig, self.model, color='rgba(255,0,0,0.5)', name='mapping')
+        betterprint.warn('passed plot_reconstruction()')
         fig.write_html(self.output_dir / 'visualization_3D.html')
+        betterprint.warn('passed write_html()')
         fig.show()  # doesn't show in WSL2
 
         betterprint.info('Done!')
