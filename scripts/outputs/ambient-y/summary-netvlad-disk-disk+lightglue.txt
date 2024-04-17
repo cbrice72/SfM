@@ -1,0 +1,16 @@
+hloc Reconstruction:
+	num_reg_images = 60
+	num_cameras = 60
+	num_points3D = 21904
+	num_observations = 121448
+	mean_track_length = 5.54456
+	mean_observations_per_image = 2024.13
+	mean_reprojection_error = 1.58119
+Elapsed Time (H:MM:SS:MS):
+	Image Retrieval    0:00:00.752226
+	Feat. Extraction   0:00:00.112334
+	Feat. Matching     0:00:00.026160
+	Sparse Reconstr.   0:02:34.767809
+	Undistortion       ---
+	Stereo (MVS)       ---
+	Fusion (dense)     ---
