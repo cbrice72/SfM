@@ -450,7 +450,7 @@ class HlocSfm:
         betterprint.info('Done!')
 
         # Print and log statistics
-        summary_reconstr = f'{self.model.summary()}'
+        summary_reconstr = f'{self.model.summary()}\n'
         summary_elapsed = ('Elapsed Time (H:MM:SS:MS):\n'
                            f'	Image Retrieval    {self.t_retrieve}\n'
                            f'	Feat. Extraction   {self.t_extract}\n'
@@ -458,7 +458,7 @@ class HlocSfm:
                            f'	Sparse Reconstr.   {self.t_sparse}\n'
                            f'	Undistortion       {self.t_undistort}\n'
                            f'	Stereo (MVS)       {self.t_stereo}\n'
-                           f'	Fusion (dense)     {self.t_fusion}')
+                           f'	Fusion (dense)     {self.t_fusion}\n')
 
         betterprint.info(f'''===[ RESULTS ]===\n{
                          summary_reconstr}\n{summary_elapsed}''')
