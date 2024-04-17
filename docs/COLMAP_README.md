@@ -12,7 +12,8 @@ Documentation for the COLMAP project can be found [here](https://colmap.github.i
     - [Generating Images](#generating-images)
     - [GUI Application](#gui-application)
     - [Command-line Application](#command-line-application)
-    - [C++ Programming API](#c-programming-api)
+    - [Python API](#python-api)
+    - [C++ API](#c-api)
 4. [Tips](#tips)
 5. [Troubleshooting](#troubleshooting)
 
@@ -164,7 +165,52 @@ Your project directory should now look similar to this.
     TODO
     ```
 
-### *C++ Programming API*
+### *Python API*
+
+#### **Installing COLMAP via pip**
+
+Pre-built wheels for Python 3.8/3.9/3.10 are available; simply install via pip.
+Note that `patch_match_stereo()` (see code block below) is only available if pycolmap was installed from source.
+
+```bash
+pip install pycolmap
+```
+
+#### **Using COLMAP in Python**
+
+See the `README.md` file at https://github.com/colmap/colmap/tree/main/pycolmap for an easy-to-understand rundown of the pycolmap wrapper. The following sample code is taken from that `README.md`.
+
+```py
+output_path: pathlib.Path
+image_dir: pathlib.Path
+
+output_path.mkdir()
+mvs_path = output_path / "mvs"
+database_path = output_path / "database.db"
+
+pycolmap.extract_features(database_path, image_dir)
+pycolmap.match_exhaustive(database_path)
+maps = pycolmap.incremental_mapping(database_path, image_dir, output_path)
+maps[0].write(output_path)
+# dense reconstruction
+pycolmap.undistort_images(mvs_path, output_path, image_dir)
+pycolmap.patch_match_stereo(mvs_path)  # requires compilation with CUDA
+pycolmap.stereo_fusion(mvs_path / "dense.ply", mvs_path)
+```
+
+To list available options and their default parameters.
+
+```py
+help(pycolmap.SiftExtractionOptions)
+```
+
+To load existing an reconstruction.
+
+```py
+reconstruction = pycolmap.Reconstruction("path/to/reconstruction/dir")
+```
+
+### *C++ API*
 
 #### **Building COLMAP from Source**
 
