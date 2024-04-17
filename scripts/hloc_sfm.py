@@ -29,7 +29,8 @@ import numpy as np
 import pprint
 import pycolmap
 import sys
-from time import sleep
+from datetime import timedelta
+from time import sleep, time
 from pathlib import Path
 from hloc import (
     extract_features,
@@ -51,6 +52,9 @@ input_shortcuts = {'mikan': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archiv
                    'flash-y': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-1-24_Captures-for-SfM/with-flashlight/a_Y-only/images/',
                    'takahashi-1': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-3-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_2/n1/images',
                    'takahashi-2': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-3-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_3/n1/images/'}
+
+# Switch between hloc's pyplot-based export into .html and COLMAP's export into .ply
+use_colmap_3d_export = True
 
 
 def usage():
@@ -232,15 +236,28 @@ class HlocSfm:
         self.sfm_pairs = self.output_dir / (f'pairs-{r}-sfm.txt')
         # - All query pairs retrieved from exhaustive matching
         self.loc_pairs = self.output_dir / (f'pairs-{r}-loc.txt')
-        # - HDF database for all extracted features
+        # - Database (HDF5) for all extracted features
         self.features = self.output_dir / (f'features-{f}.h5')
-        # - HDF database for all matched features
+        # - Database (HDF5) for all matched features
         self.matches = self.output_dir / (f'matches-{m}.h5')
-        # - Resulting SfM model
+        # - Resulting sparse reconstruction (SfM model)
         self.sfm_dir = self.output_dir / (f'sfm_{f}-with-{m}')
+        # - Resulting dense reconstruction (multi-view stereo)
+        self.mvs_dir = self.sfm_dir / "dense"
+        # - Script statistics log file
+        self.log_file = self.output_dir / f'summary-{r}-{f}-{m}.txt'
 
         # Declare member variables that will be initialized later
         self.model = None
+
+        # For holding timestamp strings
+        self.t_retrieve = '---'
+        self.t_extract = '---'
+        self.t_match = '---'
+        self.t_sparse = '---'
+        self.t_undistort = '---'
+        self.t_stereo = '---'
+        self.t_fusion = '---'
 
     def localize(self, query):
         """
@@ -310,6 +327,7 @@ class HlocSfm:
         # Note: divided into "large dataset" and "small dataset" actions
         betterprint.info('Starting image retrieval...')
         sleep(1)
+        ts = time()
 
         if len(self.references) > 50:  # large dataset (see below for small): match based on descriptors
             global_descriptors = extract_features.main(
@@ -320,12 +338,18 @@ class HlocSfm:
             pairs_from_retrieval.main(
                 global_descriptors, self.sfm_pairs, num_matched=10)
 
+        self.t_retrieve = str(timedelta(seconds=(time()-ts)))
+
         # Extract and match local features
         betterprint.info('Starting feature extraction and matching...')
         sleep(1)
+        ts = time()
 
         extract_features.main(self.feature_conf, self.image_dir, export_dir=self.output_dir,
                               image_list=self.references, feature_path=self.features)
+
+        self.t_extract = str(timedelta(seconds=(time()-ts)))
+        ts = time()
 
         if len(self.references) <= 50:  # small dataset (see above for large): match exhaustively
             pairs_from_exhaustive.main(
@@ -334,14 +358,25 @@ class HlocSfm:
         match_features.main(self.matching_conf, self.sfm_pairs, self.features,
                             export_dir=self.output_dir, matches=self.matches)
 
-        # 3D reconstruction (via COLMAP) -- longest step!
-        betterprint.info('Starting reconstruction...')
-        sleep(1)
+        self.t_match = str(timedelta(seconds=(time()-ts)))
 
+        # Sparse 3D reconstruction
+        betterprint.info('Starting sparse reconstruction...')
+        sleep(1)
+        ts = time()
+
+        # TODO: reconstruction with known camera parameters
+        # img_opts = dict(camera_model='SIMPLE_PINHOLE', camera_params=','.join(map(str, (f, cx, cy, k))))
+        # map_opts = dict(ba_refine_focal_length=False, ba_refine_extra_params=False)
+        # self.model = reconstruction.main(..., image_options=img_opts, mapper_options=map_opts)
+
+        # Note: hloc uses and returns a COLMAP `Reconstruction` object
         self.model = reconstruction.main(self.sfm_dir, self.image_dir, self.sfm_pairs,
                                          self.features, self.matches, image_list=self.references)
 
-        # Visualize results
+        self.t_sparse = str(timedelta(seconds=(time()-ts)))
+
+        # Visualize sparse reconstruction results
         betterprint.info('Generating 2D visualization...')
         sleep(1)
 
@@ -363,16 +398,74 @@ class HlocSfm:
             self.model, self.image_dir, color_by='depth', n=1)
         viz.save_plot(self.output_dir / 'visualization_2D-depth.pdf')
 
-        betterprint.info('Generating 3D visualization...')
+        betterprint.info('Generating 3D (sparse) visualization...')
         sleep(1)
 
-        fig = viz_3d.init_figure()
-        viz_3d.plot_reconstruction(
-            fig, self.model, color='rgba(255,0,0,0.5)', name='mapping')
-        fig.write_html(self.output_dir / 'visualization_3D.html')
-        fig.show()  # doesn't show in WSL2
+        if not use_colmap_3d_export:
+            # 3D point cloud w/ camera poses, viewable in web browser
+            fig = viz_3d.init_figure()
+            viz_3d.plot_reconstruction(
+                fig, self.model, color='rgba(255,0,0,0.5)', name='mapping')
+            fig.write_html(self.output_dir / 'visualization_3D.html')
+            fig.show()  # doesn't show in WSL2
+        else:
+            # Text and PLY format models, PLY viewable in MeshLab
+            self.model.write_text(self.sfm_dir)
+            self.model.export_PLY(self.output_dir / 'visualization_3D.ply')
+
+        # Dense 3D reconstruction (via COLMAP) -- longest step!
+        if "patch_match_stereo" in dir(pycolmap):  # only if compiled w/ CUDA
+            betterprint.info('Starting dense reconstruction...')
+            betterprint.warn(
+                'This step will take a LONG time!! You should probably find something else to do in the meantime.')
+            sleep(3)
+            ts = time()
+
+            pycolmap.undistort_images(
+                self.mvs_dir, self.sfm_dir, self.image_dir)
+
+            self.t_undistort = str(timedelta(seconds=(time()-ts)))
+            ts = time()
+
+            pycolmap.patch_match_stereo(self.mvs_dir)
+
+            self.t_stereo = str(timedelta(seconds=(time()-ts)))
+            ts = time()
+
+            pycolmap.stereo_fusion(self.mvs_dir / "dense.ply", self.mvs_dir)
+
+            self.t_fusion = str(timedelta(seconds=(time()-ts)))
+        else:
+            betterprint.warn('patch_match_stereo not found; skipping dense reconstruction.\n'
+                             '       This probably means pycolmap wasn\'t compiled from source.')
+
+        # Visualize dense reconstruction results
+        # betterprint.info('Generating 3D (dense) visualization...')
+        betterprint.warn(
+            'Generation of 3D (dense) visualization not yet implemented')
+        sleep(1)
+
+        # TODO: this whole part
 
         betterprint.info('Done!')
+
+        # Print and log statistics
+        summary_reconstr = f'{self.model.summary()}'
+        summary_elapsed = ('Elapsed Time (H:MM:SS:MS):\n'
+                           f'	Image Retrieval    {self.t_retrieve}\n'
+                           f'	Feat. Extraction   {self.t_extract}\n'
+                           f'	Feat. Matching     {self.t_match}\n'
+                           f'	Sparse Reconstr.   {self.t_sparse}\n'
+                           f'	Undistortion       {self.t_undistort}\n'
+                           f'	Stereo (MVS)       {self.t_stereo}\n'
+                           f'	Fusion (dense)     {self.t_fusion}')
+
+        betterprint.info(f'''===[ RESULTS ]===\n{
+                         summary_reconstr}\n{summary_elapsed}''')
+
+        with open(self.log_file, 'w') as f:
+            f.write(summary_reconstr)
+            f.write(summary_elapsed)
 
 
 if __name__ == '__main__':
