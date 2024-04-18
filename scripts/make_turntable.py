@@ -128,7 +128,7 @@ def main(input_file, silent=True):
 
     images = [Image.open(os.path.join(frames_dir, f))
               for f in os.listdir(frames_dir) if f.endswith('.png')]
-    images[0].save(f'{os.path.dirname(input_file)}/visualization_3D-turntable.gif',
+    images[0].save(f'{os.path.dirname(input_file)}/3D-sparse-turntable.gif',
                    format='GIF', append_images=images[1:], save_all=True, duration=25, loop=0)
 
     # Cleanup
