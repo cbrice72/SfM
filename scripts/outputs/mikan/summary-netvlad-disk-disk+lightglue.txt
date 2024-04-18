@@ -1,16 +1,16 @@
 Reconstruction:
 	num_reg_images = 26
 	num_cameras = 26
-	num_points3D = 16390
-	num_observations = 83423
-	mean_track_length = 5.08987
-	mean_observations_per_image = 3208.58
-	mean_reprojection_error = 1.34605
+	num_points3D = 16347
+	num_observations = 83348
+	mean_track_length = 5.09867
+	mean_observations_per_image = 3205.69
+	mean_reprojection_error = 1.35594
 Elapsed Time (H:MM:SS:MS):
-	Image Retrieval    0:00:00.000006
-	Feat. Extraction   0:00:12.075877
-	Feat. Matching     0:00:19.314372
-	Sparse Reconstr.   0:00:31.319388
-	Undistortion       ---
-	Stereo (MVS)       ---
-	Fusion (dense)     ---
+	Image Retrieval    0:00:00.000004
+	Feat. Extraction   0:00:00.081419
+	Feat. Matching     0:00:00.040264
+	Sparse Reconstr.   0:00:30.406049
+	Undistortion       0:00:00.863134
+	Stereo (MVS)       0:10:48.321578
+	Fusion (dense)     0:00:12.910811
