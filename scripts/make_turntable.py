@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ###############################################################################
-# @file   make_turntable_gif.py
+# @file   make_turntable.py
 # @brief  Creates a turntable-like GIF of a 3D model (.ply).
 #
 # @author brice.c.aa
@@ -10,12 +10,12 @@
 
 '''
 Usage:
-  ./make_turntable_gif.py -i <input_file>
+  ./make_turntable.py -i <input_file>
 
 Flags and Options:
   -h, --help                      Displays this help text.
   -i, --in=PATH        [REQUIRED] 3D model (in .ply format) to make a turntable GIF of.
-  -p, --preserve                  Preserve "turntable-frames" directory (where turntable captures are stored).
+  -s, --silent                    Disable INFO-level logging.
 '''
 
 import betterprint  # local module
@@ -46,10 +46,10 @@ def parse_args(argv):
     """
     # Default args
     input_file = ''
-    preserve = False
+    silent = False
 
     # Parse input args according to the options' short and long forms
-    opts, _ = getopt.getopt(argv, 'hi:p', ['help', 'in=', 'preserve'])
+    opts, _ = getopt.getopt(argv, 'hi:s', ['help', 'in=', 'silent'])
 
     # Validate options
     for opt, arg in opts:
@@ -69,29 +69,26 @@ def parse_args(argv):
                 sys.exit()
 
         # Preserve turntable frames
-        elif opt in ('-p', '--preserve'):
-            preserve = True
+        elif opt in ('-s', '--silent'):
+            silent = True
 
     # Check for required args (getopt has no concept of "mandatory" options)
     if not input_file:
         usage()
 
-    return input_file, preserve
+    return input_file, silent
 
 
-def main(input_file, preserve):
-    """
-    Runs a non-blocking rotating animation and saves a capture every 10 degrees.
-    For more information, see the following link:
-    https://www.open3d.org/docs/release/tutorial/visualization/non_blocking_visualization.html
-    """
+def main(input_file, silent=True):
     # Read input point cloud (.ply) using Open3D
-    betterprint.info('Reading input file...')
+    if not silent:
+        betterprint.info('Reading input file...')
 
     pcd = o3d.io.read_point_cloud(input_file)
 
     # Remove as much empty space around the geometry as possible
-    betterprint.info('Focusing model...')
+    if not silent:
+        betterprint.info('Focusing model...')
 
     vis = o3d.visualization.Visualizer()
     vis.create_window(visible=False)
@@ -99,7 +96,8 @@ def main(input_file, preserve):
     vis.get_view_control().set_zoom(0.4)
 
     # Generate a frame for every rotation
-    betterprint.info('Generating frames...')
+    if not silent:
+        betterprint.info('Generating frames...')
 
     frames_dir = f'{os.path.dirname(input_file)}/turntable-frames'
     if os.path.exists(frames_dir):
@@ -113,20 +111,20 @@ def main(input_file, preserve):
     o3d_pix_per_deg = 5.8178
     o3d_rotation_val = 1.0 * o3d_pix_per_deg  # rotate 1 deg per frame
 
-    with betterprint.status(f'Saving captures...'):
-        for angle in range(0, 360, 1):
-            # Rotate and update the visualization
-            ctr.rotate(o3d_rotation_val, 0.0)
-            vis.update_geometry(pcd)
-            vis.poll_events()
-            vis.update_renderer()
-            # Save a capture
-            vis.capture_screen_image(f'{frames_dir}/{angle:03d}.png', True)
+    for angle in range(0, 360, 1):
+        # Rotate and update the visualization
+        ctr.rotate(o3d_rotation_val, 0.0)
+        vis.update_geometry(pcd)
+        vis.poll_events()
+        vis.update_renderer()
+        # Save a capture
+        vis.capture_screen_image(f'{frames_dir}/{angle:03d}.png', True)
 
     vis.destroy_window()
 
     # Generate the animation (.gif) itself
-    betterprint.info('Compiling animation...')
+    if not silent:
+        betterprint.info('Compiling animation...')
 
     images = [Image.open(os.path.join(frames_dir, f))
               for f in os.listdir(frames_dir) if f.endswith('.png')]
@@ -134,14 +132,15 @@ def main(input_file, preserve):
                    format='GIF', append_images=images[1:], save_all=True, duration=25, loop=0)
 
     # Cleanup
-    if not preserve:
+    if not silent:
         betterprint.info('Cleaning up...')
 
-        shutil.rmtree(frames_dir)
+    shutil.rmtree(frames_dir)
 
-    betterprint.info('Done!')
+    if not silent:
+        betterprint.info('Done!')
 
 
 if __name__ == '__main__':
-    i, p = parse_args(sys.argv[1:])
-    main(i, p)
+    i, s = parse_args(sys.argv[1:])
+    main(i, s)
