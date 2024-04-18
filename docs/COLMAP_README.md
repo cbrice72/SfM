@@ -167,16 +167,52 @@ Your project directory should now look similar to this.
 
 ### *Python API*
 
-#### **Installing COLMAP via pip**
+#### **Installing PyCOLMAP via pip**
 
 Pre-built wheels for Python 3.8/3.9/3.10 are available; simply install via pip.
-Note that `patch_match_stereo()` (see code block below) is only available if pycolmap was installed from source.
+Note that dense reconstruction (i.e., `patch_match_stereo()`) is only available if pycolmap was installed from source.
 
 ```bash
 pip install pycolmap
 ```
 
-#### **Using COLMAP in Python**
+#### **Building PyCOLMAP from Source**
+
+```bash\
+cd colmap/pycolmap
+python -m pip install .
+```
+
+If you get an **error about SQLite3 not being found**, the following code blocks may help you.
+Note that you may not need everything; *something* here works, probably the `if(SQLite3_FOUND)` block, but I don't know what exactly fixed it.
+Either way, I don't care -- IT FINALLY WORKED!
+
+- In `colmap/pycolmap/CMakeLists.txt`, before the `file(GLOB...` part, add the following.
+    ```txt
+    list(APPEND CMAKE_PREFIX_PATH "/usr/bin/sqlite3")
+    find_package(SQLite3 REQUIRED Names Sqlite3 sqlite3 SQLite Sqlite sqlite)
+
+    if(SQLite3_FOUND)
+        # Create an imported target for sqlite3
+        add_library(SQLite::SQLite3 UNKNOWN IMPORTED)
+        set_target_properties(SQLite::SQLite3 PROPERTIES
+            IMPORTED_LOCATION ${SQLite3_LIBRARIES}
+            INTERFACE_INCLUDE_DIRECTORIES ${SQLite3_INCLUDE_DIRS}
+        )
+
+        # Alias sqlite3 to the sqlite library name that PyCOLMAP references
+        add_library(sqlite3 ALIAS SQLite::SQLite3)
+    endif()
+
+    # The CMakeLists.txt continues as normal
+    file(GLOB_RECURSE SOURCE_FILES ...
+    ```
+
+- I also added `find_package(SQLite3 REQUIRED)` before every reference to SQLite::SQLite3, just in case. Don't know if that mattered, though.
+    - `colmap/src/colmap/scene/CMakeLists.txt`
+    - `colmap/src/colmap/util/CMakeLists.txt`
+
+#### **Using PyCOLMAP**
 
 See the `README.md` file at https://github.com/colmap/colmap/tree/main/pycolmap for an easy-to-understand rundown of the pycolmap wrapper. The following sample code is taken from that `README.md`.
 
