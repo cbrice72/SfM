@@ -26,6 +26,7 @@ Flags and Options:
 import betterprint  # local module
 import getopt
 import make_turntable
+import matplotlib.pyplot as plt
 import numpy as np
 import pprint
 import pycolmap
@@ -255,6 +256,7 @@ class HlocSfm:
         self.model = None
 
         # For holding timestamp strings
+        self.t_start = 0
         self.t_retrieve = '---'
         self.t_extract = '---'
         self.t_match = '---'
@@ -331,7 +333,7 @@ class HlocSfm:
         # NOTE: divided into "large dataset" and "small dataset" actions
         betterprint.info('Starting image retrieval...')
         sleep(1)
-        ts = time()
+        ts = self.t_start = time()
 
         num_images = len(self.references)
 
@@ -385,10 +387,15 @@ class HlocSfm:
         self.t_sparse = str(timedelta(seconds=(time()-ts)))
 
         # Visualize sparse reconstruction results
-        betterprint.info('Generating 2D visualization...')
+        betterprint.info('Generating 2D visualizations...')
+        print('       (a total of 15 visualizations will be generated; this will take a few minutes)')
         sleep(1)
 
-        for i in range(0, num_images, floor(num_images * 0.1)):  # save 10 samples
+        Path(self.vis_dir / '2D-visibility').mkdir(parents=True, exist_ok=True)
+        Path(self.vis_dir / '2D-tracklength').mkdir(parents=True, exist_ok=True)
+        Path(self.vis_dir / '2D-depth').mkdir(parents=True, exist_ok=True)
+
+        for i in range(1, num_images, floor(num_images * 0.2)):  # save 5 samples
             # NOTE: explanation of keypoint visualization types (using color_by)
             # - 'visibility': blue if successfully triangulated, red if never matched
             # - 'track_length': red if observed many times, blue if few
@@ -400,14 +407,17 @@ class HlocSfm:
             visualization.visualize_sfm_2d(  # doesn't show in WSL2
                 self.model, self.image_dir, color_by='visibility', selected=[i])
             viz.save_plot(self.vis_dir / '2D-visibility' / f'visbl-{i}.pdf')
+            plt.close()
 
             visualization.visualize_sfm_2d(  # doesn't show in WSL2
                 self.model, self.image_dir, color_by='track_length', selected=[i])
             viz.save_plot(self.vis_dir / '2D-tracklength' / f'trlen-{i}.pdf')
+            plt.close()
 
             visualization.visualize_sfm_2d(  # doesn't show in WSL2
                 self.model, self.image_dir, color_by='depth', selected=[i])
             viz.save_plot(self.vis_dir / '2D-depth' / f'depth-{i}.pdf')
+            plt.close()
 
         betterprint.info('Generating 3D (sparse) visualization...')
         sleep(1)
@@ -426,7 +436,7 @@ class HlocSfm:
             self.model.export_PLY(ply_file)
 
             # Generate a GIF of the PLY model for quick visualization
-            make_turntable.main(ply_file)
+            make_turntable.main(str(ply_file))
 
         # Dense 3D reconstruction (via COLMAP) -- longest step!
         if "patch_match_stereo" in dir(pycolmap):  # only if compiled w/ CUDA
@@ -466,14 +476,15 @@ class HlocSfm:
 
         # Print and log statistics
         summary_reconstr = f'{self.model.summary()}\n'
-        summary_elapsed = ('Elapsed Time (H:MM:SS:MS):\n'
+        summary_elapsed = ('Elapsed Time:              H:MM:SS:MS\n'
                            f'	Image Retrieval    {self.t_retrieve}\n'
                            f'	Feat. Extraction   {self.t_extract}\n'
                            f'	Feat. Matching     {self.t_match}\n'
                            f'	Sparse Reconstr.   {self.t_sparse}\n'
                            f'	Undistortion       {self.t_undistort}\n'
                            f'	Stereo (MVS)       {self.t_stereo}\n'
-                           f'	Fusion (dense)     {self.t_fusion}\n')
+                           f'	Fusion (dense)     {self.t_fusion}\n'
+                           f'   -----TOTAL-----    {self.t_fusion-self.t_start}\n')
 
         betterprint.info(f'''===[ RESULTS ]===\n{
                          summary_reconstr}\n{summary_elapsed}''')
