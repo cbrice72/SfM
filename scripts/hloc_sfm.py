@@ -25,11 +25,13 @@ Flags and Options:
 
 import betterprint  # local module
 import getopt
+import scripts.make_turntable as make_turntable
 import numpy as np
 import pprint
 import pycolmap
 import sys
 from datetime import timedelta
+from math import floor
 from time import sleep, time
 from pathlib import Path
 from hloc import (
@@ -242,6 +244,8 @@ class HlocSfm:
         self.matches = self.output_dir / (f'matches-{m}.h5')
         # - Resulting sparse reconstruction (SfM model)
         self.sfm_dir = self.output_dir / (f'sfm_{f}-with-{m}')
+        # - Visualizations directory
+        self.vis_dir = self.output_dir / 'visualizations'
         # - Resulting dense reconstruction (multi-view stereo)
         self.mvs_dir = self.sfm_dir / "dense"
         # - Script statistics log file
@@ -324,12 +328,15 @@ class HlocSfm:
         and sequentially extracts video frames to it
         """
         # Find image pairs via image retrieval
-        # Note: divided into "large dataset" and "small dataset" actions
+        # NOTE: divided into "large dataset" and "small dataset" actions
         betterprint.info('Starting image retrieval...')
         sleep(1)
         ts = time()
 
-        if len(self.references) > 50:  # large dataset (see below for small): match based on descriptors
+        num_images = len(self.references)
+
+        # For large datasets (see below for small): match based on descriptors
+        if num_images > 50:
             global_descriptors = extract_features.main(
                 self.retrieval_conf, self.image_dir, self.output_dir)
             # Larger `k` (num_matched) improves robustness of localization for
@@ -351,7 +358,8 @@ class HlocSfm:
         self.t_extract = str(timedelta(seconds=(time()-ts)))
         ts = time()
 
-        if len(self.references) <= 50:  # small dataset (see above for large): match exhaustively
+        # For small datasets (see above for large): match exhaustively
+        if num_images <= 50:
             pairs_from_exhaustive.main(
                 self.sfm_pairs, image_list=self.references)
 
@@ -370,7 +378,7 @@ class HlocSfm:
         # map_opts = dict(ba_refine_focal_length=False, ba_refine_extra_params=False)
         # self.model = reconstruction.main(..., image_options=img_opts, mapper_options=map_opts)
 
-        # Note: hloc uses and returns a COLMAP `Reconstruction` object
+        # NOTE: hloc uses and returns a COLMAP `Reconstruction` object
         self.model = reconstruction.main(self.sfm_dir, self.image_dir, self.sfm_pairs,
                                          self.features, self.matches, image_list=self.references)
 
@@ -380,23 +388,26 @@ class HlocSfm:
         betterprint.info('Generating 2D visualization...')
         sleep(1)
 
-        # TODO: for some reason, save_plot() below only saves the last selected picture
+        for i in range(0, num_images, floor(num_images * 0.1)):  # save 10 samples
+            # NOTE: explanation of keypoint visualization types (using color_by)
+            # - 'visibility': blue if successfully triangulated, red if never matched
+            # - 'track_length': red if observed many times, blue if few
+            # - 'depth': red if relatively far away, blue if closer
 
-        # Note: explanation of keypoint visualization types (using color_by)
-        # - 'visibility': blue if successfully triangulated, red if never matched
-        # - 'track_length': red if observed many times, blue if few
-        # - 'depth': red if relatively far away, blue if closer
-        visualization.visualize_sfm_2d(  # doesn't show in WSL2
-            self.model, self.image_dir, color_by='visibility', n=1)
-        viz.save_plot(self.output_dir / 'visualization_2D-vis.pdf')
+            # NOTE: for some reason, save_plot() only saves the last selected picture,
+            # so we generate and save them one at a time
 
-        visualization.visualize_sfm_2d(  # doesn't show in WSL2
-            self.model, self.image_dir, color_by='track_length', n=1)
-        viz.save_plot(self.output_dir / 'visualization_2D-tracklen.pdf')
+            visualization.visualize_sfm_2d(  # doesn't show in WSL2
+                self.model, self.image_dir, color_by='visibility', selected=[i])
+            viz.save_plot(self.vis_dir / '2D-visibility' / f'visbl-{i}.pdf')
 
-        visualization.visualize_sfm_2d(  # doesn't show in WSL2
-            self.model, self.image_dir, color_by='depth', n=1)
-        viz.save_plot(self.output_dir / 'visualization_2D-depth.pdf')
+            visualization.visualize_sfm_2d(  # doesn't show in WSL2
+                self.model, self.image_dir, color_by='track_length', selected=[i])
+            viz.save_plot(self.vis_dir / '2D-tracklength' / f'trlen-{i}.pdf')
+
+            visualization.visualize_sfm_2d(  # doesn't show in WSL2
+                self.model, self.image_dir, color_by='depth', selected=[i])
+            viz.save_plot(self.vis_dir / '2D-depth' / f'depth-{i}.pdf')
 
         betterprint.info('Generating 3D (sparse) visualization...')
         sleep(1)
@@ -406,12 +417,16 @@ class HlocSfm:
             fig = viz_3d.init_figure()
             viz_3d.plot_reconstruction(
                 fig, self.model, color='rgba(255,0,0,0.5)', name='mapping')
-            fig.write_html(self.output_dir / 'visualization_3D.html')
+            fig.write_html(self.vis_dir / '3D-sparse.html')
             fig.show()  # doesn't show in WSL2
         else:
             # Text and PLY format models, PLY viewable in MeshLab
             self.model.write_text(self.sfm_dir)
-            self.model.export_PLY(self.output_dir / 'visualization_3D.ply')
+            ply_file = self.vis_dir / '3D-sparse.ply'
+            self.model.export_PLY(ply_file)
+
+            # Generate a GIF of the PLY model for quick visualization
+            make_turntable.main(ply_file)
 
         # Dense 3D reconstruction (via COLMAP) -- longest step!
         if "patch_match_stereo" in dir(pycolmap):  # only if compiled w/ CUDA
@@ -432,7 +447,7 @@ class HlocSfm:
             self.t_stereo = str(timedelta(seconds=(time()-ts)))
             ts = time()
 
-            pycolmap.stereo_fusion(self.mvs_dir / "dense.ply", self.mvs_dir)
+            pycolmap.stereo_fusion(self.vis_dir / "3D-dense.ply", self.mvs_dir)
 
             self.t_fusion = str(timedelta(seconds=(time()-ts)))
         else:
