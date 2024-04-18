@@ -25,7 +25,7 @@ Flags and Options:
 
 import betterprint  # local module
 import getopt
-import scripts.make_turntable as make_turntable
+import make_turntable
 import numpy as np
 import pprint
 import pycolmap
