@@ -62,7 +62,7 @@ The following is a more granular, step-by-step explanation based on the instruct
 
 2. Download the [GL3D dataset](https://1drv.ms/u/s!Anl8gFgW1C7LknxGy1gesj30SQ1I?e=RTT6re) (see GL3D `README.md` "Downloads" section) and extract it into the `data/` directory.
 
-...
+TODO
 
 The GL3D hyperparameters (in the `configs/` directory) can be configured as follows:
 - TODO
