@@ -8,7 +8,6 @@ Source code and documentation for the Pixel Perfect SfM project can be found [he
 
 1. [Setup](#setup)
 2. [Usage](#usage)
-    - [Command-line Application](#command-line-application)
     - [Python Programming API](#python-programming-api)
 3. [Tips](#tips)
     - [Supported Pipeline Configurations](#supported-pipeline-configurations)
@@ -20,10 +19,6 @@ Source code and documentation for the Pixel Perfect SfM project can be found [he
 Simply follow the instructions in the `hloc` repo's `README.md`.
 
 ## Usage
-
-### *Command-line Application*
-
-...
 
 ### *Python Programming API*
 
@@ -144,36 +139,4 @@ Further reading: https://colmap.github.io/cameras.html
 
 ## Troubleshooting
 
-### *Visualizations aren't showing, but Python doesn't throw any errors (WSL2)*
-
-The following is summarized from [this Stack Overflow post](https://stackoverflow.com/questions/43397162/show-matplotlib-plots-and-other-gui-in-ubuntu-wsl1-wsl2).
-
-#### **In a WSL2 terminal:**
-
-1. Install the relevant `python3.*-tk` package and the Python `matplotlib` package.
-    ```bash
-    sudo apt update
-    sudo apt install python3.[ver]-tk
-    pip install matplotlib
-    ```
-
-2. Add the following line to the end of your `.bashrc`. This retrieves the IP address (nameserver) used by Windows 11 to display WSL2 GUI apps.
-    ```txt
-    export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0
-    ```
-
-3. Reload your `.bashrc`.
-    ```bash
-    . ~/.bashrc
-    ```
-
-#### **In Windows 11:**
-
-1. Install [VcXsrv](https://sourceforge.net/projects/vcxsrv/).
-2. Run XLaunch.
-3. In "Display settings", select "Multiple windows".
-4. In "Client startup", select "Start no client".
-5. In "Extra settings", do the following.
-    - Uncheck "Native opengl"
-    - Check "Disable access control"
-6. Click finish, then try running the Python visualization again.
+...
