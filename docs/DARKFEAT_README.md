@@ -17,6 +17,17 @@ Source code and documentation for the DarkFeat project can be found [here](https
 
 ### Prerequisites
 
+| Requirements | |
+|---|---|
+| [GitHub](https://github.com/THU-LYJ-Lab/DarkFeat) | commit `6a9790b` |
+| Python | 3.10.12 |
+| PyTorch | 2.2.1 (built for cuda 12.1) |
+| Cuda | 12.3 |
+
+| Components | | |
+|---|---|---|
+| GL3D | gl3d_imgs | 1000x1000 undistorted images of GL3D |
+
 Before building `DarkFeat`, you must first install [the appropriate PyTorch for your system](https://pytorch.org/get-started/locally/).
 You can check your installed CUDA Compute Platform version by running `nvidia-smi` (the required `nvcc` package can be installed via `sudo apt install nvidia-cuda-toolkit`).
 
