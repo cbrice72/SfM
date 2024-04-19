@@ -255,8 +255,11 @@ class HlocSfm:
         # Declare member variables that will be initialized later
         self.model = None
 
-        # For holding timestamp strings
+        # For calculating overall script runtime
         self.t_start = 0
+        self.t_total = 0
+
+        # For holding timestamp strings
         self.t_retrieve = '---'
         self.t_extract = '---'
         self.t_match = '---'
@@ -459,10 +462,14 @@ class HlocSfm:
 
             pycolmap.stereo_fusion(self.vis_dir / "3D-dense.ply", self.mvs_dir)
 
-            self.t_fusion = str(timedelta(seconds=(time()-ts)))
+            time_now = time()
+            self.t_fusion = str(timedelta(seconds=(time_now-ts)))
         else:
             betterprint.warn('patch_match_stereo not found; skipping dense reconstruction.\n'
                              '       This probably means pycolmap wasn\'t compiled from source.')
+            time_now = time()
+
+        self.t_total = str(timedelta(seconds=(time_now-self.t_start)))
 
         # Visualize dense reconstruction results
         # betterprint.info('Generating 3D (dense) visualization...')
@@ -484,7 +491,7 @@ class HlocSfm:
                            f'	Undistortion       {self.t_undistort}\n'
                            f'	Stereo (MVS)       {self.t_stereo}\n'
                            f'	Fusion (dense)     {self.t_fusion}\n'
-                           f'   -----TOTAL-----    {self.t_fusion-self.t_start}\n')
+                           f'   -----TOTAL-----    {self.t_total}\n')
 
         betterprint.info(f'''===[ RESULTS ]===\n{
                          summary_reconstr}\n{summary_elapsed}''')
