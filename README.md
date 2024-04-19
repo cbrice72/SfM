@@ -1,6 +1,9 @@
 # LIBRA SfM
 
-## Scripts
+Before you start, check out the following document.<br>
+[Setting up a Linux development environment・Linuxの開発環境をセットアップ](SETUP.md)
+
+## Python Scripts
 
 - [How to use the LIBRA SfM pipeline・LIBRAのSfMパイプラインの使い方](scripts/README.md)
 
