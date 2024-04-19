@@ -1,22 +1,18 @@
-# LIBRA SfM Index
+# LIBRA SfM
 
 ## Scripts
 
-- [How to use the LIBRA SfM pipeline](scripts/README.md)
+- [How to use the LIBRA SfM pipeline・LIBRAのSfMパイプラインの使い方](scripts/README.md)
 
 ## COLMAP
 
-- [How to set up and use COLMAP](docs/COLMAP_README.md)
-- [SfM pipeline parameters used in the LIBRA project](docs/COLMAP_PARAMS.md)
+- [How to set up and use COLMAP・COLMAPのインストール・使用方法](docs/COLMAP_README.md)
+- [SfM pipeline parameters used in the LIBRA project・LIBRAプロジェクトのSfMで使われてるパラメータ](docs/COLMAP_PARAMS.md)
 
 ## HLOC (Hierarchical Localization)
 
-- [How to set up and use hloc](docs/HLOC_README.md)
+- [How to set up and use hloc・hlocのインストール・使用方法](docs/HLOC_README.md)
 
 ## DarkFeat
 
-- [How to set up and use DarkFeat](docs/DARKFEAT_README.md)
-
-## Misc.
-
-- [Version list for each SfM repo, package, and component used in the LIBRA project](docs/VERSIONS.md)
+- [How to set up and use DarkFeat・DarkFeatのインストール・使用方法](docs/DARKFEAT_README.md)
