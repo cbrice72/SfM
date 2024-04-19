@@ -491,7 +491,7 @@ class HlocSfm:
                            f'	Undistortion       {self.t_undistort}\n'
                            f'	Stereo (MVS)       {self.t_stereo}\n'
                            f'	Fusion (dense)     {self.t_fusion}\n'
-                           f'   -----TOTAL-----    {self.t_total}\n')
+                           f'	-----TOTAL-----    {self.t_total}\n')
 
         betterprint.info(f'''===[ RESULTS ]===\n{
                          summary_reconstr}\n{summary_elapsed}''')
