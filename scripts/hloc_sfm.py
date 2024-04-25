@@ -471,14 +471,6 @@ class HlocSfm:
 
         self.t_total = str(timedelta(seconds=(time_now-self.t_start)))
 
-        # Visualize dense reconstruction results
-        # betterprint.info('Generating 3D (dense) visualization...')
-        betterprint.warn(
-            'Generation of 3D (dense) visualization not yet implemented')
-        sleep(1)
-
-        # TODO: this whole part
-
         betterprint.info('Done!')
 
         # Print and log statistics
