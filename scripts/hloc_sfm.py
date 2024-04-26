@@ -407,20 +407,26 @@ class HlocSfm:
             # NOTE: for some reason, save_plot() only saves the last selected picture,
             # so we generate and save them one at a time
 
-            visualization.visualize_sfm_2d(  # doesn't show in WSL2
-                self.model, self.image_dir, color_by='visibility', selected=[i])
-            viz.save_plot(self.vis_dir / '2D-visibility' / f'visbl-{i}.pdf')
-            plt.close()
+            try:
+                visualization.visualize_sfm_2d(  # doesn't show in WSL2
+                    self.model, self.image_dir, color_by='visibility', selected=[i])
+                viz.save_plot(self.vis_dir / '2D-visibility' /
+                              f'visbl-{i}.pdf')
+                plt.close()
 
-            visualization.visualize_sfm_2d(  # doesn't show in WSL2
-                self.model, self.image_dir, color_by='track_length', selected=[i])
-            viz.save_plot(self.vis_dir / '2D-tracklength' / f'trlen-{i}.pdf')
-            plt.close()
+                visualization.visualize_sfm_2d(  # doesn't show in WSL2
+                    self.model, self.image_dir, color_by='track_length', selected=[i])
+                viz.save_plot(self.vis_dir / '2D-tracklength' /
+                              f'trlen-{i}.pdf')
+                plt.close()
 
-            visualization.visualize_sfm_2d(  # doesn't show in WSL2
-                self.model, self.image_dir, color_by='depth', selected=[i])
-            viz.save_plot(self.vis_dir / '2D-depth' / f'depth-{i}.pdf')
-            plt.close()
+                visualization.visualize_sfm_2d(  # doesn't show in WSL2
+                    self.model, self.image_dir, color_by='depth', selected=[i])
+                viz.save_plot(self.vis_dir / '2D-depth' / f'depth-{i}.pdf')
+                plt.close()
+            except:
+                betterprint.warn(
+                    f'Selected image index ({i}) out of range, skipping!')
 
         betterprint.info('Generating 3D (sparse) visualization...')
         sleep(1)
