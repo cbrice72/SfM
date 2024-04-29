@@ -54,7 +54,8 @@ input_shortcuts = {'mikan': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archiv
                    'ambient-yz': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-1-24_Captures-for-SfM/no-flashlight/c_Y-and-Z/images/',
                    'flash-z': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-1-24_Captures-for-SfM/with-flashlight/a_Z-only/images/',
                    'takahashi-1': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-3-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_2/n1/images',
-                   'takahashi-2': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-3-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_3/n1/images/'}
+                   'takahashi-2': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-3-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_3/n1/images/',
+                   'takahashi-combined': '/mnt/c/Users/brice/Desktop/Projects/LIBRA-II/Archive/2024-3-12_Takahashi-Collab_(ultrasonic-sensor)/combined/n1/images/'}
 
 # Switch between hloc's pyplot-based export into .html and COLMAP's export into .ply
 use_colmap_3d_export = True
