@@ -1,0 +1,7 @@
+{
+    "exclude": [
+        "**/__pycache__",
+        "COLMAP-3.9.1-windows-cuda",
+        "Linux"
+    ]
+}
