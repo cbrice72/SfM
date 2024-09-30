@@ -330,8 +330,7 @@ class HlocSfm:
 
     def main(self):
         """
-        Makes a clean directory based on the video filename
-        and sequentially extracts video frames to it
+        Runs the selected SfM pipeline on a set of images
         """
         # Find image pairs via image retrieval
         # NOTE: divided into "large dataset" and "small dataset" actions
