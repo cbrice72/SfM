@@ -79,7 +79,7 @@ def parse_args(argv):
     return input_file, silent
 
 
-def main(input_file, silent=True):
+def make_turntable(input_file, silent=True):
     # Read input point cloud (.ply) using Open3D
     if not silent:
         betterprint.info('Reading input file...')
@@ -143,4 +143,4 @@ def main(input_file, silent=True):
 
 if __name__ == '__main__':
     i, s = parse_args(sys.argv[1:])
-    main(i, s)
+    make_turntable(i, s)

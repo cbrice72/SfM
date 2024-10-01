@@ -56,7 +56,7 @@ def status(msg):
     return std_console.status(f'[white]{escape(msg)}', spinner='point', spinner_style='cyan')
 
 
-def main():
+def example():
     """
     An interactive test suite for trying out this module's custom print statements.
     """
@@ -100,4 +100,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    example()
