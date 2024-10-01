@@ -92,7 +92,7 @@ def parse_args(argv):
     return vid_path, proj_dir, interval
 
 
-def main(argv):
+def extract_frames(argv):
     """
     Makes a clean directory based on the video filename
     and sequentially extracts video frames to it
@@ -158,4 +158,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    extract_frames(sys.argv[1:])

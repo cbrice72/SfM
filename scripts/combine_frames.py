@@ -67,7 +67,7 @@ def parse_args(argv):
     return image_dir, output_path
 
 
-def main(input_folder, output_video):
+def combine_frames(input_folder, output_video):
     # Retrieve all images from input folder
     images = [img for img in os.listdir(
         input_folder) if img.endswith((".png", ".jpg", ".jpeg"))]
@@ -102,4 +102,4 @@ def main(input_folder, output_video):
 
 if __name__ == "__main__":
     i, o = parse_args(sys.argv[1:])
-    main(i, o)
+    combine_frames(i, o)
