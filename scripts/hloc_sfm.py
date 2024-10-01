@@ -83,7 +83,7 @@ def parse_args(argv):
     Parses and validates input arguments for this script.
     """
     # Default args
-    image_dir = ''
+    image_dir = Path('')
     output_dir = ''
     use_defaults = False
     retrieval_type = 'netvlad'
@@ -167,7 +167,7 @@ def parse_args(argv):
     # Set optional args, if necessary
     if not output_dir:
         # By default, use input image directory as output root directory
-        output_dir = Path(image_dir + "output")
+        output_dir = image_dir / "output"
         betterprint.warn(
             f'Output directory not specified; defaulting to {output_dir}')
 
