@@ -92,14 +92,11 @@ def parse_args(argv):
     return vid_path, proj_dir, interval
 
 
-def extract_frames(argv):
+def extract_frames(vid_path, proj_dir, interval):
     """
     Makes a clean directory based on the video filename
     and sequentially extracts video frames to it
     """
-    # Parse input args
-    vid_path, proj_dir, interval = parse_args(argv)
-
     # Read video
     vid = cv2.VideoCapture(vid_path)
     interval = round(vid.get(cv2.CAP_PROP_FPS)
@@ -119,7 +116,7 @@ def extract_frames(argv):
             elif pick == 'n':
                 # Avoid overwriting files if user rejects prompt
                 betterprint.info('Exiting: user refused overwrite!')
-                sys.exit()
+                return
 
     os.makedirs(out_path)
     betterprint.info('Output dir: ' + out_path)
@@ -158,4 +155,5 @@ def extract_frames(argv):
 
 
 if __name__ == '__main__':
-    extract_frames(sys.argv[1:])
+    v, p, n = parse_args(sys.argv[1:])
+    extract_frames(v, p, n)
