@@ -25,7 +25,7 @@ Flags and Options:
 
 import betterprint  # local module
 import getopt
-import make_turntable
+from make_turntable import make_turntable
 import matplotlib.pyplot as plt
 import numpy as np
 import pprint
@@ -445,7 +445,7 @@ class HlocSfm:
             self.model.export_PLY(ply_file)
 
             # Generate a GIF of the PLY model for quick visualization
-            make_turntable.main(str(ply_file))
+            make_turntable(str(ply_file))
 
         # Dense 3D reconstruction (via COLMAP) -- longest step!
         if "patch_match_stereo" in dir(pycolmap):  # only if compiled w/ CUDA
