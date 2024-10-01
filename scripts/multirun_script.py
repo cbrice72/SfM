@@ -2,16 +2,27 @@
 
 ###############################################################################
 # @file   multirun_script.py
-# @brief  Run a given Python script multiple times with fixed or iterative variables.
+# @brief  Run a given Python script multiple times with fixed or iterative args.
+#         The script and command-line arguments are hard-coded in this file to
+#         improve management of options for larger iterations (see `shortcuts`).
 #
 # @author brice.c.aa
 # @date   2024/10/1
 ###############################################################################
 
+'''
+Usage:
+  ./multirun_script.py
+
+Flags and Options:
+  (none)
+'''
+
 import betterprint  # local module
+from datetime import datetime
 import subprocess
-import sys
 from pathlib import Path
+import sys
 
 class Shortcut:
     def __init__(self, s, fa, ia, iv):
@@ -21,6 +32,23 @@ class Shortcut:
         self.iter_vals = iv
 
 shortcuts = {
+    "2024-10-1 Sampling": Shortcut(
+        "sample_frames.py",
+        {"-n": "10"},
+        ["-i"],
+        [
+            ["/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/baseline/color/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/baseline/depth/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/darkness/color/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/darkness/depth/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/light-90/color/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/light-90/depth/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/light-45/color/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/light-45/depth/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/light-0/color/extracted",
+            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense_Indirect_Lighting_Experiment/light-0/depth/extracted"
+            ]
+        ]),
     "2024-10-1 Videos": Shortcut(
         "combine_frames.py",
         {},
@@ -88,13 +116,18 @@ def multirun_script(script_name, fixed_args, iter_args, iter_vals):
 
     betterprint.info(f"Multirunning {script_name} {len(iter_vals[0])} times")
 
+    t_start = datetime.now()  # log start time
+
     # Loop over args in order
     for iter_val in zip(*iter_vals):
         cmd = [sys.executable, str(script_path)]
         
         # Add fixed arguments
         for arg, value in fixed_args.items():
-            cmd.extend([arg, str(value)])
+            if value:  # handle options
+                cmd.extend([arg, str(value)])
+            else:  # handle flags
+                cmd.extend([arg])
         
         # Add iterative arguments
         for arg, value in zip(iter_args, iter_val):
@@ -105,14 +138,30 @@ def multirun_script(script_name, fixed_args, iter_args, iter_vals):
             try:
                 result = subprocess.run(cmd, check=True, capture_output=True, text=True)
                 if result.stdout:
-                    betterprint.info(f"Process finished: {result.stdout}")
+                    betterprint.info(f"Process finished with output:\n{result.stdout}")
                 else:
                     betterprint.info(f"Process finished")
             except subprocess.CalledProcessError as e:
-                betterprint.err(f"Process returned error: {e}\n{e.stderr}")
+                betterprint.err(f"\nProcess returned error: {e}\n{e.stderr}")
 
-    betterprint.info("Finished!")
+    elapsed = str(datetime.now() - t_start).split(".")[0]
+    betterprint.info(f'Finished multirunning {script_name} in {elapsed}!')
 
 if __name__ == '__main__':
-    sel = shortcuts["2024-10-1 Videos"]
+    # Enumerate shortcuts
+    for i, key in enumerate(shortcuts.keys(), start=1):
+        print(f"  {i}. {key}")
+
+    # Get user input and validate selection
+    sel_key = ""
+    while True:
+        sel = int(betterprint.ask("Select a shortcut:"))
+        if 1 <= sel <= len(shortcuts):
+            sel_key = list(shortcuts.keys())[sel - 1]
+            break
+        else:
+            betterprint.warn("Invalid selection, try again")
+
+    # Retrieve shortcut and enter multirun logic
+    sel = shortcuts[sel_key]
     multirun_script(sel.script_name, sel.fixed_args, sel.iter_args, sel.iter_vals)
