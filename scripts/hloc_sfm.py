@@ -481,7 +481,7 @@ class HlocSfm:
 
         # Print and log statistics
         summary_reconstr = f'{self.model.summary()}\n'
-        summary_elapsed = ('Elapsed Time:              H:MM:SS:MS\n'
+        summary_elapsed = ('Elapsed Time:              H:MM:SS.MS\n'
                            f'	Image Retrieval    {self.t_retrieve}\n'
                            f'	Feat. Extraction   {self.t_extract}\n'
                            f'	Feat. Matching     {self.t_match}\n'
