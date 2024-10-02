@@ -166,8 +166,8 @@ def parse_args(argv):
 
     # Set optional args, if necessary
     if not output_dir:
-        # By default, use input image directory as output root directory
-        output_dir = image_dir / "output"
+        # By default, place output directory in same location as input image directory
+        output_dir = image_dir.resolve().parent / "output"
         betterprint.warn(
             f'Output directory not specified; defaulting to {output_dir}')
 
