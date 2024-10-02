@@ -24,17 +24,19 @@ Flags and Options:
 '''
 
 import betterprint  # local module
+from make_turntable import make_turntable  # local module
+
+from datetime import timedelta
 import getopt
-from make_turntable import make_turntable
+from math import floor
 import matplotlib.pyplot as plt
 import numpy as np
-import pprint
-import pycolmap
-import sys
-from datetime import timedelta
-from math import floor
-from time import sleep, time
 from pathlib import Path
+import pprint
+import sys
+from time import sleep, time
+
+import pycolmap
 from hloc import (
     extract_features,
     match_features,
@@ -108,7 +110,7 @@ def parse_args(argv):
 
         # Input - Images Dir
         elif opt in ('-i', '--in'):
-            # Check if a "secret nickname" was provided instead of an actual path
+            # Check if a shortcut was provided instead of an actual path
             if arg in input_shortcuts:
                 output_dir = Path(f'outputs/{arg}/').resolve()
                 arg = input_shortcuts[arg]
