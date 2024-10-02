@@ -148,7 +148,7 @@ python3 sample_frames.py -h
 
 ## Third-party Apps・サードパーティー
 
-### *rs-convert*
+### *rs-convert・rosbagのコンバーター*
 
 Converts the rosbag (`.bag`) file output by the Intel RealSense Viewer into various filetypes (PNG, CSV, RAW, PLY, BIN, txt).
 
@@ -162,6 +162,12 @@ cd C:\Program Files (x86)\Intel RealSense SDK 2.0\tools
 # Run the converter, outputting all RGB and depth frames
 .\rs-convert.exe -p C:\path\to\your\image\output\folder\ -i C:\path\to\your\ros.bag
 ```
+
+### *CloudCompare・3D点群比較用*
+
+3D point cloud processing software for comparing two or more dense 3D points clouds.
+
+For more informations, including downloads, see the [website](https://www.danielgm.net/cc/).
 
 ## Documentation・説明書
 
