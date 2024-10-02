@@ -167,7 +167,8 @@ cd C:\Program Files (x86)\Intel RealSense SDK 2.0\tools
 
 3D point cloud processing software for comparing two or more dense 3D points clouds.
 
-For more informations, including downloads, see the [website](https://www.danielgm.net/cc/).
+For the project page, including downloads, see the [website](https://www.danielgm.net/cc/).
+The wiki can be found [here](https://www.cloudcompare.org/doc/wiki/index.php/Main_Page).
 
 ## DocumentationÅEê‡ñæèë
 
