@@ -6,16 +6,22 @@ Documentation for the COLMAP project can be found [here](https://colmap.github.i
 
 ## Table of Contents
 
-1. [Setup](#setup)
-2. [Terminology](#terminology)
-3. [Usage](#usage)
-    - [Generating Images](#generating-images)
-    - [GUI Application](#gui-application)
-    - [Command-line Application](#command-line-application)
-    - [Python API](#python-api)
-    - [C++ API](#c-api)
-4. [Tips](#tips)
-5. [Troubleshooting](#troubleshooting)
+- [Table of Contents](#table-of-contents)
+- [Setup](#setup)
+- [Terminology](#terminology)
+- [Usage](#usage)
+    - [*Generating Images*](#generating-images)
+    - [*GUI Application*](#gui-application)
+    - [*Terminal Application*](#terminal-application)
+    - [*Python API*](#python-api)
+    - [*C++ API*](#c-api)
+- [Tips](#tips)
+    - [*Tips: Feature Extraction*](#tips-feature-extraction)
+    - [*Tips: Feature Matching*](#tips-feature-matching)
+    - [*Tips: Reconstruction*](#tips-reconstruction)
+- [Troubleshooting](#troubleshooting)
+    - [*Troubleshooting: Feature Matching*](#troubleshooting-feature-matching)
+    - [*Troubleshooting: Dense Reconstruction*](#troubleshooting-dense-reconstruction)
 
 ## Setup
 
@@ -25,8 +31,7 @@ Getting started with COLMAP is very straightforward.
 - For **Linux**, you must first build from source; see [COLMAP docs: Installation - Build from Source](https://colmap.github.io/install.html#build-from-source).
     - At the time of writing (2024-01-30), the instructions in this document relate solely to Windows.
 
-If you wish to link against the COLMAP API in your code, you *must* build it from source regardless of your operating system.
-Follow the instructions in [COLMAP docs: Installation - Library](https://colmap.github.io/install.html#library).
+If you wish to link against the COLMAP API in your code, you *must* build it from source regardless of your operating system. Follow the instructions in [COLMAP docs: Installation - Library](https://colmap.github.io/install.html#library).
 
 ## Terminology
 
@@ -58,6 +63,7 @@ Keep the following points in mind when capturing images for SfM generation.
     - Press Ctrl+S to actually save your project config file (just call it `project`)
 
 Your project directory should now look similar to this.
+
 ```txt
 |- images/
 |   |- 0.jpg
@@ -67,7 +73,7 @@ Your project directory should now look similar to this.
 |- project.ini
 ```
 
-#### **Quickest Method**
+#### **Quickest Method (GUI)**
 
 4. Click "Reconstruction" -> "Automatic reconstruction".
     - For "Workspace folder", select your project folder
@@ -75,10 +81,10 @@ Your project directory should now look similar to this.
     - Check options related to your dataset, such as "Data type" or "Shared intrinsics"
 5. Click "Run".
 
-#### **Full Process**
+#### **Full Process (GUI)**
 
 4. Extract features by clicking "Processing" -> "Feature extraction". This finds sparse feature points in each image.
-5. Match features by clicking "Processing" -> "Feature matching". This finds correspondences between the feature points in different images. To increase matches, see [Tips/Feature Matching](#feature-matching).
+5. Match features by clicking "Processing" -> "Feature matching". This finds correspondences between the feature points in different images. To increase matches, see [Tips/Feature Matching](#tips-feature-matching).
 6. Run the sparse reconstruction by clicking "Reconstruction" -> "Start reconstruction". The viewer will dynamically populate with points as more images are matched.
     - To save your progress, export the resulting model to a folder in your workspace (e.g., `$WS_PATH/sparse/0/`)
 7. Bring up the dense reconstruction window by clicking "Reconstruction" -> "Dense reconstruction".
@@ -86,30 +92,33 @@ Your project directory should now look similar to this.
     - Click "Undistortion" to initialize the dense reconstruction workspace
     - Click "Stereo" to carry out dense reconstruction; **this can take anywhere from 15 minutes to a few hours**
     - Click "Fusion" to fuse the results into a colored point cloud; this concludes the dense reconstruction process
-8. Run the Poisson mesher from the dense reconstruction window by clicking "Poisson".
-9. Run the Delaunay mesher from the dense reconstruction window by clicking "Delaunay".
+8. [OPTIONAL] Run the Poisson mesher from the dense reconstruction window by clicking "Poisson".
+9. [OPTIONAL] Run the Delaunay mesher from the dense reconstruction window by clicking "Delaunay".
 
-### *Command-line Application*
+### *Terminal Application*
 
 1. Create a project directory and place your images folder inside it.
 2. Open a terminal/PowerShell instance and navigate to the directory where you extracted the ZIP file from [Setup](#setup). There should be a file named `COLMAP.bat`.
 3. Set the following environment variable for ease of use in later commands.
+
     ```bash
     $Env:WS_PATH = "<path/to/workspace/folder>"
     ```
 
-#### **Quickest Method**
+#### **Quickest Method (Terminal)**
 
 4. Simply run the automatic reconstruction. (TODO: untested)
+
     ```bash
     .\COLMAP.bat automatic_reconstructor `
         --workspace_path $Env:WS_PATH `
         --image_path $Env:WS_PATH/images
     ```
 
-#### **Full Process**
+#### **Full Process (Terminal)**
 
 4. Extract features.
+
     ```bash
     .\COLMAP.bat feature_extractor `
         --database_path $Env:WS_PATH/database.db `
@@ -117,12 +126,14 @@ Your project directory should now look similar to this.
     ```
 
 5. Match features.
+
     ```bash
     .\COLMAP.bat exhaustive_matcher `
         --database_path $Env:WS_PATH/database.db
     ```
 
 6. Run the sparse reconstruction.
+
     ```bash
     mkdir $Env:WS_PATH/sparse
     
@@ -133,6 +144,7 @@ Your project directory should now look similar to this.
     ```
 
 7. Run the dense reconstruction. (TODO: untested)
+
     ```bash
     mkdir $DATASET_PATH/dense
     
@@ -156,11 +168,13 @@ Your project directory should now look similar to this.
     ```
 
 8. [OPTIONAL] Run the Poisson mesher.
+
     ```bash
     TODO
     ```
 
 9. [OPTIONAL] Run the Delaunay mesher.
+
     ```bash
     TODO
     ```
@@ -169,8 +183,7 @@ Your project directory should now look similar to this.
 
 #### **Installing PyCOLMAP via pip**
 
-Pre-built wheels for Python 3.8/3.9/3.10 are available; simply install via pip.
-Note that dense reconstruction (i.e., `patch_match_stereo()`) is only available if pycolmap was installed from source.
+Pre-built wheels for Python 3.8/3.9/3.10 are available; simply install via pip. Note that dense reconstruction (i.e., `patch_match_stereo()`) is only available if pycolmap was installed from source.
 
 ```bash
 pip install pycolmap
@@ -183,11 +196,10 @@ cd colmap/pycolmap
 python -m pip install .
 ```
 
-If you get an **error about SQLite3 not being found**, the following code blocks may help you.
-Note that you may not need everything; *something* here works, probably the `if(SQLite3_FOUND)` block, but I don't know what exactly fixed it.
-Either way, I don't care -- IT FINALLY WORKED!
+If you get an **error about SQLite3 not being found**, the following code blocks may help you. Note that you may not need everything; *something* here works, probably the `if(SQLite3_FOUND)` block, but I don't know what exactly fixed it. Either way, I don't care -- IT FINALLY WORKED!
 
 - In `colmap/pycolmap/CMakeLists.txt`, before the `file(GLOB...` part, add the following.
+
     ```txt
     list(APPEND CMAKE_PREFIX_PATH "/usr/bin/sqlite3")
     find_package(SQLite3 REQUIRED Names Sqlite3 sqlite3 SQLite Sqlite sqlite)
@@ -214,7 +226,7 @@ Either way, I don't care -- IT FINALLY WORKED!
 
 #### **Using PyCOLMAP**
 
-See the `README.md` file at https://github.com/colmap/colmap/tree/main/pycolmap for an easy-to-understand rundown of the pycolmap wrapper. The following sample code is taken from that `README.md`.
+See the `README.md` file at <https://github.com/colmap/colmap/tree/main/pycolmap> for an easy-to-understand rundown of the pycolmap wrapper. The following sample code is taken from that `README.md`.
 
 ```py
 output_path: pathlib.Path
@@ -255,6 +267,7 @@ First, ensure you have the CUDA toolkit/compiler installed on your system. If yo
 Before linking against COLMAP, you must first [build it from source](https://colmap.github.io/install.html#build-from-source). Note that if you are on Ubuntu 22.04, you will need to implement some workarounds.
 
 - There is a problem when compiling with Ubuntu's default CUDA package and GCC, so you must compile against GCC 10.
+
     ```bash
     # There is a problem when compiling with Ubuntu 22.04's default CUDA package and GCC; implement a workaround
     sudo apt-get install gcc-10 g++-10
@@ -268,6 +281,7 @@ Before linking against COLMAP, you must first [build it from source](https://col
     ```
 
 - During compilation, the Boost library may throw an error about deprecated `Bind` placeholder useage. This must be manually fixed in `src/colmap/exe/sfm.cc` by adding the following lines under the last `#include`.
+
     ```cpp
     #include <boost/bind/bind.hpp>
     
@@ -330,18 +344,19 @@ int main(int argc, char** argv) {
 
 ## Tips
 
-### *Feature Extraction*
+### *Tips: Feature Extraction*
 
 - Ensure you are using the most applicable camera model (in GUI: directly under "Camera model", e.g., `SIMPLE_RADIAL`, `SIMPLE_PINHOLE`, etc.).
 - Use the options `--SiftExtraction.estimate_affine_shape=true` and `--SiftExtraction.domain_size_pooling=true`.
 
-### *Feature Matching*
+### *Tips: Feature Matching*
 
 - Enable "Guided Feature Matching" (in GUI: `guided_matching` under "General Options").
 
-### *Reconstruction*
+### *Tips: Reconstruction*
 
 - Geo-registration is possible by providing the 3D centers of a camera for three or more images. The coordinates can be either cartesian (`x y z`) or GPS (`lat lon alt`); note that if you use GPS coordinates you will have to specify additional conversion settings (see [this FAQ post](https://colmap.github.io/faq.html#geo-registration)).
+
     ```txt
     image_name1.jpg X1 Y1 Z1
     image_name2.jpg X2 Y2 Z2
@@ -362,9 +377,10 @@ int main(int argc, char** argv) {
 
 ## Troubleshooting
 
-### *Feature Matching*
+### *Troubleshooting: Feature Matching*
 
 If you encounter either of the following error messages, it means your GPU has run out of memory during the matching process.
+
 ```bash
 # GUI
 ERROR: Feature matching failed. This probably caused by insufficient GPU
@@ -374,12 +390,14 @@ MultiplyDescriptor: an illegal memory access was encountered
 ```
 
 The maximum required GPU memory can be approximated using this formula:
+
 ```txt
 (4 * num_matches^2) + (4 * num_matches * 256)
 ```
+
 For example, if you set `--SiftMatching.max_num_matches 10000`, the maximum required GPU memory will be around 400MB, which are only allocated if one of your images actually has that many features.
 
-### *Dense Reconstruction*
+### *Troubleshooting: Dense Reconstruction*
 
 If the dense point cloud contains **too many outliers** and **too much noise**, try increasing the value of the `--StereoFusion.min_num_pixels` option.
 
