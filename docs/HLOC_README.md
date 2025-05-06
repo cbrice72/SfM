@@ -6,13 +6,14 @@ Source code and documentation for the Pixel Perfect SfM project can be found [he
 
 ## Table of Contents
 
-1. [Setup](#setup)
-2. [Usage](#usage)
-    - [Python Programming API](#python-programming-api)
-3. [Tips](#tips)
-    - [Supported Pipeline Configurations](#supported-pipeline-configurations)
-    - [Camera Models](#camera-models)
-4. [Troubleshooting](#troubleshooting)
+- [Table of Contents](#table-of-contents)
+- [Setup](#setup)
+- [Usage](#usage)
+    - [*Python Programming API*](#python-programming-api)
+- [Tips](#tips)
+    - [*Supported Pipeline Configurations*](#supported-pipeline-configurations)
+    - [*Camera Models*](#camera-models)
+- [Troubleshooting](#troubleshooting)
 
 ## Setup
 
@@ -24,8 +25,7 @@ Simply follow the instructions in the `hloc` repo's `README.md`.
 
 #### **Tutorials (Jupyter Notebooks)**
 
-There are some very well-made interactive tutorials in the form of Jupyter notebooks included in the root directory of the `hloc` repo.
-You can run through the code in these notebooks step by step to better understand `hloc`'s SfM workflow and Python API.
+There are some very well-made interactive tutorials in the form of Jupyter notebooks included in the root directory of the `hloc` repo. You can run through the code in these notebooks step by step to better understand `hloc`'s SfM workflow and Python API.
 
 ```bash
 # Ensure Jupyter is installed
@@ -103,7 +103,7 @@ reconstruction.main(..., mapper_options=dict(ba_refine_focal_length=False, ba_re
 
 ## Tips
 
-### *Supported Pipeline Configurations* 
+### *Supported Pipeline Configurations*
 
 |Image Retrieval|Feature Extraction|Feature Matching|
 |---|---|---|
@@ -121,7 +121,7 @@ reconstruction.main(..., mapper_options=dict(ba_refine_focal_length=False, ba_re
 
 ### *Camera Models*
 
-Further reading: https://colmap.github.io/cameras.html
+Further reading: <https://colmap.github.io/cameras.html>
 
 |Model|Parameters|Notes|
 |---|---|---|

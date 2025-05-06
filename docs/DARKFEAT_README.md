@@ -6,16 +6,20 @@ Source code and documentation for the DarkFeat project can be found [here](https
 
 ## Table of Contents
 
-1. [Setup](#setup)
-2. [Usage](#usage)
-    - [Demo](#demo)
-    - [Custom Dataset](#custom-dataset)
-3. [Tips](#tips)
-4. [Troubleshooting](#troubleshooting)
+- [Table of Contents](#table-of-contents)
+- [Setup](#setup)
+    - [*Prerequisites*](#prerequisites)
+    - [*DarkFeat*](#darkfeat)
+- [Usage](#usage)
+    - [*Demo*](#demo)
+    - [*Custom Dataset*](#custom-dataset)
+- [Tips](#tips)
+    - [*API Usage*](#api-usage)
+- [Troubleshooting](#troubleshooting)
 
 ## Setup
 
-### Prerequisites
+### *Prerequisites*
 
 | Requirements | |
 |---|---|
@@ -28,12 +32,12 @@ Source code and documentation for the DarkFeat project can be found [here](https
 |---|---|---|
 | GL3D | gl3d_imgs | 1000x1000 undistorted images of GL3D |
 
-Before building `DarkFeat`, you must first install [the appropriate PyTorch for your system](https://pytorch.org/get-started/locally/).
-You can check your installed CUDA Compute Platform version by running `nvidia-smi` (the required `nvcc` package can be installed via `sudo apt install nvidia-cuda-toolkit`).
+Before building `DarkFeat`, you must first install [the appropriate PyTorch for your system](https://pytorch.org/get-started/locally/). You can check your installed CUDA Compute Platform version by running `nvidia-smi` (the required `nvcc` package can be installed via `sudo apt install nvidia-cuda-toolkit`).
 
-### DarkFeat
+### *DarkFeat*
 
 1. Install the DarkFeat repo.
+
     ```bash
     git clone https://github.com/THU-LYJ-Lab/DarkFeat.git
     cd DarkFeat
@@ -66,6 +70,7 @@ The matched pictures (with # of matches in the top left) in the `output/` direct
 The following is a more granular, step-by-step explanation based on the instructions in the DarkFeat `README.md` "Training from scratch" section.
 
 1. Clone the GL3D repository and navigate to it.
+
     ```bash
     git clone https://github.com/lzx551402/GL3D.git
     cd GL3D
@@ -76,6 +81,7 @@ The following is a more granular, step-by-step explanation based on the instruct
 TODO
 
 The GL3D hyperparameters (in the `configs/` directory) can be configured as follows:
+
 - TODO
 
 ## Tips

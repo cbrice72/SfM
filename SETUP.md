@@ -1,24 +1,23 @@
 # Setup
 
-This document lists the necessary steps to set up a Linux (Ubuntu 22.04) development environment on a Windows 11 machine.
-Please contact Christian Brice ([email](mailto:brice.c.aa@m.titech.ac.jp)) with any questions or revision suggestions.
+This document lists the necessary steps to set up a Linux (Ubuntu 22.04) development environment on a Windows 11 machine. Please contact Christian Brice ([email](mailto:brice.c.aa@m.titech.ac.jp)) with any questions or revision suggestions.
 
 ## Table of Contents
 
-1. [Setting Up](#setting-up)
-    - [VM](#vm)
-    - [WSL](#wsl)
-2. [Preparing Your Development Environment](#preparing-your-development-environment)
-    - [Proxy Settings](#proxy-settings)
-    - [System Updates](#system-updates)
-4. [Optional Items](#optional-items)
+- [Setting Up](#setting-up)
+    - [*VM*](#vm)
+    - [*WSL*](#wsl)
+- [Preparing Your Development Environment](#preparing-your-development-environment)
+    - [*Proxy Settings*](#proxy-settings)
+    - [*System Updates*](#system-updates)
+- [Optional Items](#optional-items)
+    - [*VS Code*](#vs-code)
 
 ## Setting Up
 
-You may set up a development environment in either a Virtual Machine (VM) or Windows Subsystem for Linux (WSL).
-There are a few differences you should be aware of.
+You may set up a development environment in either a Virtual Machine (VM) or Windows Subsystem for Linux (WSL). There are a few differences you should be aware of.
 
-| | Ability | Environment | USB Support | Shared Folder Support
+| | Ability | Environment | USB Support | Shared Folder Support |
 |---|---|---|---|---|
 | **VM** | Full-featured | Runs in separate environment | Select PC or VM on plug-in | Non-native; enable in VMWare settings + install [open-vm-tools](https://kb.vmware.com/s/article/2073803) |
 | **WSL** | Lightweight | Runs natively in Windows | Non-native; install [USBIPD](https://learn.microsoft.com/en-us/windows/wsl/connect-usb) + use every time |  Windows `C:\` drive located at `/mnt/c` |
@@ -43,34 +42,35 @@ I also recommend you allocate more cores and RAM to your VM; this can be done in
 ### *WSL*
 
 1. Open a PowerShell terminal and install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
+
     ```bash
     wsl --install -d Ubuntu-22.04
     ```
 
-> **_NOTE:_** If you are getting the error "System Integrity policy has been violated", you will need to disable Smart App Control in Windows settings.
+> ***NOTE:*** If you are getting the error "System Integrity policy has been violated", you will need to disable Smart App Control in Windows settings.
 
-2. Once the installation is finished, enter the username and password you want to use when logging into the Ubuntu shell.
+1. Once the installation is finished, enter the username and password you want to use when logging into the Ubuntu shell.
 
 ## Preparing Your Development Environment
 
 ### *Proxy Settings*
 
-Open `/etc/apt/apt.conf` (requires sudo) and add the following line with your proxy details.
-Note that the address *must* include the leading "http://" (e.g., `http://proxy.noc.titech.ac.jp:3128`).
+Open `/etc/apt/apt.conf` (requires sudo) and add the following line with your proxy details. Note that the address *must* include the leading "http://" (e.g., `http://proxy.noc.titech.ac.jp:3128`).
+
 ```txt
 Acquire::http::Proxy "<address>:<port>";
 ```
 
 #### **Git**
 
-If you already have Git installed, go ahead and configure its proxy now.
-If not, remember to do so after the `sudo apt install` step in the next section.
-Note that the address *must* include the leading "http://".
+If you already have Git installed, go ahead and configure its proxy now. If not, remember to do so after the `sudo apt install` step in the next section. Note that the address *must* include the leading "http://".
+
 ```bash
 git config --global http.proxy <address>:<port>
 ```
 
 To download the required submodules (i.e., copy other repositories used as dependencies), run the following.
+
 ```bash
 git submodule init  # only necessary the first time
 git submodule update
@@ -79,6 +79,7 @@ git submodule update
 ### *System Updates*
 
 Update the APT package lists and ensure your system is up to date.
+
 ```bash
 sudo apt update && sudo apt upgrade
 ```
@@ -88,6 +89,7 @@ sudo apt update && sudo apt upgrade
 ### *VS Code*
 
 To install, simply [download](https://code.visualstudio.com/download) and run the `.deb`.
+
 ```bash
 sudo dpkg -i <package_name>
 ```
@@ -97,11 +99,13 @@ sudo dpkg -i <package_name>
 If you're prompted to "unlock a keyring" (by entering your Linux password) every time you start up VS Code, follow these instructions.
 
 1. Open your display manager config file. If you're not sure what that is, look for a file ending in "dm" in the `/etc/pam.d` directory (e.g., `sddm`, `lightdm`).
+
     ```bash
     sudo nano /etc/pam.d/<file ending in "dm">
     ```
 
 2. Check if the following "keyring" lines exist. If they do, simply remove the preceding dashes (`-`). Otherwise, append them to the end of their respective sections as shown below.
+
     ```txt
     @include common-auth
     auth    optional        pam_gnome_keyring.so
