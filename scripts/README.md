@@ -6,13 +6,28 @@ Project link: [https://github.com/christian-brice/SfM](https://github.com/christ
 
 ## Table of Contents
 
-1. [Requirements・要件](#requirements要件)
-2. [Usage・使い方](#usage使い方)
-3. [Third-party Apps・サードパーティー](#third-party-appsサードパーティー)
-4. [Documentation・説明書](#documentation説明書)
-5. [About Us・メンバー](#about-usメンバー)
-6. [Contributing・Gitとの連携](#contributinggitとの連携)
-7. [Troubleshooting・トラブルシューティング](#troubleshootingトラブルシューティング)
+- [Table of Contents](#table-of-contents)
+- [Requirements・要件](#requirements要件)
+    - [*OS \& Software*](#os--software)
+    - [*Setup*](#setup)
+- [Usage・使い方](#usage使い方)
+    - [*combine\_frames.py・連続画像からビデオを作成する*](#combine_framespy連続画像からビデオを作成する)
+    - [*extract\_frames\_rosbag.py・ROS2-bagから連続画像を抽出する*](#extract_frames_rosbagpyros2-bagから連続画像を抽出する)
+    - [*extract\_frames\_video.py・ビデオから連続画像を抽出する*](#extract_frames_videopyビデオから連続画像を抽出する)
+    - [*hloc\_sfm.py・メインSfMパイプライン*](#hloc_sfmpyメインsfmパイプライン)
+    - [*make\_turntable.py・3Dモデルの回転GIFを作る*](#make_turntablepy3dモデルの回転gifを作る)
+    - [*multirun\_script.py・スクリプトを連続して複数回実行する*](#multirun_scriptpyスクリプトを連続して複数回実行する)
+    - [*realsense\_video\_writer.py・RealSenseカメラのRGB-Dストリームを保存*](#realsense_video_writerpyrealsenseカメラのrgb-dストリームを保存)
+    - [*samples\_frames.py・ディレクトリから画像をサンプル*](#samples_framespyディレクトリから画像をサンプル)
+- [Third-party Apps・サードパーティー](#third-party-appsサードパーティー)
+    - [*rs-convert・rosbagのコンバーター*](#rs-convertrosbagのコンバーター)
+    - [*CloudCompare・3D点群比較用*](#cloudcompare3d点群比較用)
+- [Documentation・説明書](#documentation説明書)
+- [About Us・メンバー](#about-usメンバー)
+- [Contributing・Gitとの連携](#contributinggitとの連携)
+    - [*Giving proxy access to Git・Gitにプロキシアクセス*](#giving-proxy-access-to-gitgitにプロキシアクセス)
+    - [*Accessing the Code・コードへのアクセス*](#accessing-the-codeコードへのアクセス)
+- [Troubleshooting・トラブルシューティング](#troubleshootingトラブルシューティング)
 
 ## Requirements・要件
 
@@ -31,13 +46,15 @@ For RealSense-related software, you must first install the [Intel RealSense SDK 
 
 ## Usage・使い方
 
-`hloc_sfm.py` is the main script. To run the demo, enter the following in a terminal.
+[hloc_sfm.py](#hloc_sfmpyメインsfmパイプライン) is the main script. To run the demo, enter the following in a terminal.
 
 ```bash
 python3 hloc_sfm.py -i mikan --use-defaults
 ```
 
 > ***NOTE:*** the input argument `mikan` is a shortcut. You can add your own shortcuts by appending new map entries to the global variable `input_shortcuts`.
+
+<br>
 
 ### *combine_frames.py・連続画像からビデオを作成する*
 
@@ -52,7 +69,25 @@ Combine sequential frames into a video.
 python3 combine_frames.py -h
 ```
 
-### *extract_frames.py・ビデオから連続画像を抽出する*
+<br>
+
+### *extract_frames_rosbag.py・ROS2-bagから連続画像を抽出する*
+
+Extract frames from a ROS2-bag at a certain interval.
+
+|Input|Output|
+|---|---|
+|Path to rosbag (directory)|`images/` folder wth frames<br>(same directory as input)|
+|Image topic<br>(e.g., `/camera/color/image_raw`)||
+
+```bash
+# See help text for detailed explanation of usage and available options
+python3 extract_frames_rosbag.py -h
+```
+
+<br>
+
+### *extract_frames_video.py・ビデオから連続画像を抽出する*
 
 Extract frames from a video at a certain interval.
 
@@ -63,8 +98,10 @@ Extract frames from a video at a certain interval.
 
 ```bash
 # See help text for detailed explanation of usage and available options
-python3 extract_frames.py -h
+python3 extract_frames_video.py -h
 ```
+
+<br>
 
 ### *hloc_sfm.py・メインSfMパイプライン*
 
@@ -85,6 +122,8 @@ LIBRA project SfM pipeline using hloc.
 python3 hloc_sfm.py -h
 ```
 
+<br>
+
 ### *make_turntable.py・3Dモデルの回転GIFを作る*
 
 Creates a turntable-like GIF of a 3D model (`.ply`).
@@ -98,7 +137,9 @@ Creates a turntable-like GIF of a 3D model (`.ply`).
 python3 make_turntable.py -h
 ```
 
-### *multirun_script.py・3Dモデルの回転GIFを作る*
+<br>
+
+### *multirun_script.py・スクリプトを連続して複数回実行する*
 
 Run a given Python script multiple times with fixed or iterative args.
 The script and command-line arguments are hard-coded in this file to
@@ -112,6 +153,8 @@ improve management of options for larger iterations (see `shortcuts`).
 # See help text for detailed explanation of usage and available options
 python3 multirun_script.py -h
 ```
+
+<br>
 
 ### *realsense_video_writer.py・RealSenseカメラのRGB-Dストリームを保存*
 
@@ -129,6 +172,8 @@ Extracts RGB and depth videos from rosbags created using Intel RealSense D4xx ca
 python3 realsense_video_extractor.py -h
 ```
 
+<br>
+
 ### *samples_frames.py・ディレクトリから画像をサンプル*
 
 Sample images in a directory at a set interval. This is essentially the same logic as `extract_frames.py`, except it works with images that have already been extracted from a rosbag.
@@ -143,6 +188,8 @@ Sample images in a directory at a set interval. This is essentially the same log
 python3 sample_frames.py -h
 ```
 
+<br><hr>
+
 ## Third-party Apps・サードパーティー
 
 ### *rs-convert・rosbagのコンバーター*
@@ -155,16 +202,20 @@ On Windows:
 
 ```powershell
 # The executable isn't in PATH, so move to its directory
-cd C:\Program Files (x86)\Intel RealSense SDK 2.0\tools
+cd "C:\Program Files (x86)\Intel RealSense SDK 2.0\tools"
 # Run the converter, outputting all RGB and depth frames
 .\rs-convert.exe -p C:\path\to\your\image\output\folder\ -i C:\path\to\your\ros.bag
 ```
+
+<br>
 
 ### *CloudCompare・3D点群比較用*
 
 3D point cloud processing software for comparing two or more dense 3D points clouds.
 
 For the project page, including downloads, see the [website](https://www.danielgm.net/cc/). The wiki can be found [here](https://www.cloudcompare.org/doc/wiki/index.php/Main_Page).
+
+<br><hr>
 
 ## Documentation・説明書
 
