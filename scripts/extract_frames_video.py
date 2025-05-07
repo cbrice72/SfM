@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ###############################################################################
-# @file   extract_frames.py
+# @file   extract_frames_video.py
 # @brief  Extract frames from a video at a certain interval.
 #
 # @author brice.c.aa
@@ -10,7 +10,7 @@
 
 '''
 Usage:
-  ./extract_frames.py -i <input_file>
+  ./extract_frames_video.py -i <input_file>
 
 Flags and Options:
   -h, --help                   Displays this help text.
@@ -92,10 +92,10 @@ def parse_args(argv):
     return vid_path, proj_dir, interval
 
 
-def extract_frames(vid_path, proj_dir, interval):
+def extract_frames_video(vid_path, proj_dir, interval):
     """
     Makes a clean directory based on the video filename
-    and sequentially extracts video frames to it
+    and sequentially extracts video frames to it.
     """
     # Read video
     vid = cv2.VideoCapture(vid_path)
@@ -123,11 +123,11 @@ def extract_frames(vid_path, proj_dir, interval):
 
     # Extract frames
     frame_count = 0
-    frame_total = round(vid.get(cv2.CAP_PROP_FRAME_COUNT) / interval)
+    saved_count = round(vid.get(cv2.CAP_PROP_FRAME_COUNT) / interval)
 
     t_start = time.time()  # log start time
 
-    with betterprint.status(f'Attempting to extract {frame_total} frames...'):
+    with betterprint.status(f'Extracting {saved_count} frames...'):
         while True:
             # Attempt to read next frame
             ret, frame = vid.read()
@@ -151,9 +151,9 @@ def extract_frames(vid_path, proj_dir, interval):
     cv2.destroyAllWindows()
 
     betterprint.info(
-        f'Processed {frame_count} frames (saved {frame_total} @ n={interval}) in {t_end - t_start:.2f} s!')
+        f'Processed {frame_count} frames (saved {saved_count} @ n={interval}) in {t_end - t_start:.2f} s!')
 
 
 if __name__ == '__main__':
-    v, p, n = parse_args(sys.argv[1:])
-    extract_frames(v, p, n)
+    i, o, n = parse_args(sys.argv[1:])
+    extract_frames_video(i, o, n)
