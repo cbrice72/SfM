@@ -55,9 +55,10 @@ input_shortcuts = {'mikan': '/mnt/d/LIBRA Archive/2023-12-13_SfM-Example/n60/ima
                    'ambient-y': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/b_Y-only/images/',
                    'ambient-yz': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/c_Y-and-Z/images/',
                    'flash-z': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/with-flashlight/a_Z-only/images/',
-                   'takahashi-1': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_2/n1/images',
+                   'takahashi-1': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_2/n1/images/',
                    'takahashi-2': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_3/n1/images/',
                    'takahashi-combined': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/combined/n1/images/',
+                   'rtab-control': '/mnt/d/LIBRA Archive/2025-04-25 LIBRA-I RTAB-Map (RealSense only)/maps/ground-truth_frames/images/',
                    'rtab-rgbd': '/mnt/d/LIBRA Archive/2025-04-25 LIBRA-I RTAB-Map (RealSense only)/bags/n30/images/'}
 
 # Switch between hloc's pyplot-based export into .html and COLMAP's export into .ply
