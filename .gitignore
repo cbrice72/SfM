@@ -322,6 +322,7 @@ COLMAP-*/*
 scripts/outputs/**
 !scripts/outputs/*/
 !scripts/outputs/**/*.txt
+!scripts/outputs/*/visualizations/
 !scripts/outputs/**/*.gif
 !scripts/outputs/**/*.pdf
 !scripts/outputs/**/*.html
