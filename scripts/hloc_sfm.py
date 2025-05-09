@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 import pprint
+import re
 import sys
 from time import sleep, time
 
@@ -259,6 +260,8 @@ class HlocSfm:
 
         # Declare member variables that will be initialized later
         self.model = None
+        self.global_descriptors = None
+        self.num_images = len(self.references)
 
         # For calculating overall script runtime
         self.t_start = 0
@@ -272,6 +275,54 @@ class HlocSfm:
         self.t_undistort = '---'
         self.t_stereo = '---'
         self.t_fusion = '---'
+
+    def validate_image_filenames(self):
+        """
+        Validates image filenames in the specified input directory.
+        """        
+        if not self.image_dir.exists():
+            betterprint.err(f"Input directory '{self.image_dir}' does not exist")
+            sys.exit()
+        
+        # Explanation of the following regex:
+        # - Must start with alphanumeric ONLY
+        # - Rest of name can be any combination of alphanumeric, underscore, hyphen, or period
+        # - Must end in common image file extension
+        valid_filename_pattern = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_\-.]*\.(jpg|jpeg|png|tif|tiff)$', re.IGNORECASE)
+        error_msgs = []
+        
+        for filepath in self.image_dir.iterdir():
+            if not filepath.is_file():
+                continue  # skip directories
+                
+            filename = filepath.name
+            problems = []
+            
+            # Check for spaces
+            if ' ' in filename:
+                problems.append("contains spaces")
+            
+            # Check for valid format with regex
+            if not valid_filename_pattern.match(filename):
+                # If regex failed, identify specific issue(s)
+                if not any(ext in filename.suffix.lower() for ext in ['.jpg', '.jpeg', '.png', '.tif', '.tiff']):
+                    problems.append("invalid extension")
+                if filename.startswith('.'):
+                    problems.append("starts with period")
+                if re.search(r'[^a-zA-Z0-9_\-.]', filename):
+                    problems.append("contains special characters")
+            
+            # Compile human-readable error message
+            if problems:
+                error_msgs.append(f"'{filename}': {', '.join(problems)}")
+        
+        if error_msgs:
+            betterprint.err("Found problematic filenames that will cause hloc to fail:")
+            for issue in error_msgs:
+                betterprint.err(f"  - {issue}")
+            
+            betterprint.err("Please rename these files to remove spaces and special characters (example of valid filename: image_001.jpg).")
+            sys.exit()
 
     def localize(self, query):
         """
@@ -336,6 +387,9 @@ class HlocSfm:
         """
         Runs the selected SfM pipeline on a set of images
         """
+        # Validate input(s)
+        self.validate_image_filenames()
+
         # Find image pairs via image retrieval
         # NOTE: divided into "large dataset" and "small dataset" actions
         betterprint.info('Starting image retrieval...')
