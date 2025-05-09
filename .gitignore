@@ -318,13 +318,12 @@ __pycache__/
 # COLMAP pre-built binary folder
 COLMAP-*/*
 
-# Output from hloc_sfm.py (except for most visualizations, i.e., .pdf and .html)
-scripts/outputs/**/sfm*
-scripts/outputs/**/features*
-scripts/outputs/**/global-feats*
-scripts/outputs/**/matches*
-scripts/outputs/**/pairs*
-*.ply
+# Only include lightweight outputs from hloc_sfm.py
+scripts/outputs/*
+!.txt
+!.gif
+!.pdf
+!.html
 
 # Output from combine_frames.py and realsense_video_extractor.py
 scripts/out_png/**
