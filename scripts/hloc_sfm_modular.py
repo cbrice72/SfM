@@ -17,6 +17,7 @@ Flags and Options:
   -i, --in=PATH        [REQUIRED] Directory containing input images for SfM (alternatively, a valid shortcut).
   -o, --out=PATH                  Directory for saving SfM data to.
   --use-defaults                  Uses default pipeline configuration (skips any user input).
+  --force-reprocess               Force reprocessing of all steps, ignoring existing files.
   -r, --retriever=STR             Image retriever (for finding global descriptors).
   -f, --features=STR              Feature extractor.
   -m, --matcher=STR               Feature matcher.
@@ -91,6 +92,7 @@ def parse_args(argv):
     image_dir = Path('')
     output_dir = ''
     use_defaults = False
+    force_reprocess = False
     retrieval_type = 'netvlad'
     feature_type = 'disk'
     matching_type = 'disk+lightglue'
@@ -103,7 +105,7 @@ def parse_args(argv):
 
     # Parse input args according to the options' short and long forms
     opts, _ = getopt.getopt(
-        argv, 'hi:o:r:f:m:q:', ['help', 'in=', 'out=', 'use-defaults', 'retriever=', 'features=', 'matcher=', 'query='])
+        argv, 'hi:o:r:f:m:q:', ['help', 'in=', 'out=', 'use-defaults', 'retriever=', 'features=', 'matcher=', 'force', 'query='])
 
     # Validate options
     for opt, arg in opts:
@@ -111,7 +113,7 @@ def parse_args(argv):
         if opt in ('-h', '--help'):
             usage()
 
-        # Input - Images Dir
+        # Input - Images Directory
         elif opt in ('-i', '--in'):
             # Check if a shortcut was provided instead of an actual path
             if arg in input_shortcuts:
@@ -123,13 +125,17 @@ def parse_args(argv):
                 betterprint.err(f'Invalid input filepath: {image_dir}')
                 sys.exit()
 
-        # Output - Models & Databases Dir
+        # Output - Models & Databases Directory
         elif opt in ('-o', '--out'):
             output_dir = Path(f'outputs/{arg}/').resolve()
 
         # "Use Defaults" Flag
         elif opt in ('--use-defaults'):
             use_defaults = True
+
+        # "Force Reprocessing" Flag
+        elif opt in ('--force'):
+            force_reprocess = True
 
         # Image Retrieval Config
         elif opt in ('-r', '--retriever'):
@@ -225,14 +231,15 @@ def parse_args(argv):
                 matching_type = sel
                 matching_type_provided = True
 
-    return image_dir, output_dir, retrieval_type, feature_type, matching_type, query
+    return image_dir, output_dir, retrieval_type, feature_type, matching_type, force_reprocess, query
 
 
 class HlocSfm:
-    def __init__(self, i, o, r, f, m):
+    def __init__(self, i, o, force, r, f, m):
         # Initialize input arg-based member variables
         self.image_dir = i
         self.output_dir = o
+        self.force_reprocess = force
         self.retrieval_conf = extract_features.confs[r]
         self.feature_conf = extract_features.confs[f]
         self.matching_conf = match_features.confs[m]
@@ -275,6 +282,72 @@ class HlocSfm:
         self.t_undistort = '---'
         self.t_stereo = '---'
         self.t_fusion = '---'
+
+    def check_existing_outputs(self):
+        """
+        Checks whether any steps have already been computed and, if so,
+        instructs the rest of the script to use the existing data.
+        Useful when execution fails partway through large datasets.
+        """
+        skip_steps = {
+            'retrieve': False,
+            'extract': False, 
+            'match': False,
+            'sparse': False,
+            'visualize': False,
+            'undistort': False,
+            'stereo': False,
+            'fusion': False
+        }
+
+        # Exit early if user requested reprocessing
+        if self.force_reprocess:
+            betterprint.warn('Force reprocessing flag set, all steps will be executed')
+            return skip_steps
+
+        # Check for existing database files
+        if self.sfm_pairs.exists():
+            betterprint.info(f'Found existing pairs file: {self.sfm_pairs}')
+            skip_steps['retrieve'] = True
+            
+        if self.features.exists():
+            betterprint.info(f'Found existing features database: {self.features}')
+            skip_steps['extract'] = True
+            
+        if self.matches.exists():
+            betterprint.info(f'Found existing matches database: {self.matches}')
+            skip_steps['match'] = True
+            
+        # Check for existing sparse reconstruction and try to load it
+        if self.sfm_dir.exists() and (self.sfm_dir / 'images.bin').exists() and (self.sfm_dir / 'points3D.bin').exists():
+            betterprint.info(f'Found existing sparse reconstruction: {self.sfm_dir}')
+            try:
+                self.model = pycolmap.Reconstruction(self.sfm_dir)
+                betterprint.info(f'Successfully loaded existing model with {len(self.model.images)} images and {len(self.model.points3D)} points')
+                skip_steps['sparse'] = True
+            except Exception as e:
+                betterprint.err(f'Failed to load existing model: {e}')
+                skip_steps['sparse'] = False
+        
+        # Check for existing visualizations
+        if (self.vis_dir / '3D-sparse.ply').exists() or (self.vis_dir / '3D-sparse.html').exists():
+            betterprint.info(f'Found existing visualizations: {self.vis_dir}')
+            skip_steps['visualize'] = True
+            
+        # Check for existing dense reconstruction steps
+        if (self.mvs_dir / 'images').exists() and (self.mvs_dir / 'sparse').exists():
+            betterprint.info(f'Found existing undistorted images: {self.mvs_dir}')
+            skip_steps['undistort'] = True
+            
+        if (self.mvs_dir / 'stereo').exists() and list((self.mvs_dir / 'stereo').glob('*.bin')):
+            betterprint.info(f'Found existing stereo results: {self.mvs_dir / "stereo"}')
+            skip_steps['stereo'] = True
+            
+        if (self.vis_dir / '3D-dense.ply').exists():
+            betterprint.info(f'Found existing dense reconstruction: {self.vis_dir / "3D-dense.ply"}')
+            skip_steps['fusion'] = True
+            
+        return skip_steps
 
     def validate_image_filenames(self):
         """
@@ -347,29 +420,38 @@ class HlocSfm:
 
         self.t_retrieve = str(timedelta(seconds=(time()-ts)))
 
-    def extract_and_match_features(self):
+    def extract_and_match_features(self, skip_extract=False, skip_match=False):
         """
         Extracts and matches local features.
         """
-        betterprint.info('Starting feature extraction and matching...')
-        sleep(1)
-        ts = time()
+        if not skip_extract:
+            betterprint.info('Starting feature extraction...')
+            sleep(1)
+            ts = time()
 
-        extract_features.main(self.feature_conf, self.image_dir, export_dir=self.output_dir,
-                              image_list=self.references, feature_path=self.features)
+            extract_features.main(self.feature_conf, self.image_dir, export_dir=self.output_dir,
+                                image_list=self.references, feature_path=self.features)
 
-        self.t_extract = str(timedelta(seconds=(time()-ts)))
-        ts = time()
+            self.t_extract = str(timedelta(seconds=(time()-ts)))
+        else:
+            betterprint.info('Using existing feature database')
+        
+        if not skip_match:
+            betterprint.info('Starting feature matching...')
+            sleep(1)
+            ts = time()
 
-        # For small datasets: match exhaustively
-        if self.num_images <= 50:
-            pairs_from_exhaustive.main(
-                self.sfm_pairs, image_list=self.references)
+            # For small datasets: match exhaustively
+            if self.num_images <= 50:
+                pairs_from_exhaustive.main(
+                    self.sfm_pairs, image_list=self.references)
 
-        match_features.main(self.matching_conf, self.sfm_pairs, self.features,
-                            export_dir=self.output_dir, matches=self.matches)
+            match_features.main(self.matching_conf, self.sfm_pairs, self.features,
+                                export_dir=self.output_dir, matches=self.matches)
 
-        self.t_match = str(timedelta(seconds=(time()-ts)))
+            self.t_match = str(timedelta(seconds=(time()-ts)))
+        else:
+            betterprint.info('Using existing matches database')
 
     def perform_sparse_reconstruction(self):
         """
@@ -454,7 +536,7 @@ class HlocSfm:
         
         self.t_visuals = str(timedelta(seconds=(time()-ts)))
 
-    def perform_dense_reconstruction(self):
+    def perform_dense_reconstruction(self, skip_undistort=False, skip_stereo=False, skip_fusion=False):
         """
         Performs dense 3D reconstruction (via COLMAP).
         """
@@ -466,20 +548,37 @@ class HlocSfm:
             sleep(3)
             ts = time()
 
-            pycolmap.undistort_images(
-                self.mvs_dir, self.sfm_dir, self.image_dir)
+            if not skip_undistort:
+                ts = time()
+                betterprint.info('Undistorting images...')
 
-            self.t_undistort = str(timedelta(seconds=(time()-ts)))
-            ts = time()
+                pycolmap.undistort_images(self.mvs_dir, self.sfm_dir, self.image_dir)
 
-            pycolmap.patch_match_stereo(self.mvs_dir, options={'geom_consistency': True, 'filter': True})
+                self.t_undistort = str(timedelta(seconds=(time()-ts)))
+            else:
+                betterprint.info('Using existing undistorted images')
 
-            self.t_stereo = str(timedelta(seconds=(time()-ts)))
-            ts = time()
+            if not skip_stereo:
+                ts = time()
+                betterprint.info('Running stereo matching...')
 
-            pycolmap.stereo_fusion(self.vis_dir / "3D-dense.ply", self.mvs_dir)
+                pycolmap.patch_match_stereo(self.mvs_dir,
+                                            options={'geom_consistency': True,
+                                                     'filter': True})
 
-            self.t_fusion = str(timedelta(seconds=(time()-ts)))
+                self.t_stereo = str(timedelta(seconds=(time()-ts)))
+            else:
+                betterprint.info('Using existing stereo results')
+
+            if not skip_fusion:
+                ts = time()
+                betterprint.info('Running stereo fusion...')
+
+                pycolmap.stereo_fusion(self.vis_dir / "3D-dense.ply", self.mvs_dir)
+
+                self.t_fusion = str(timedelta(seconds=(time()-ts)))
+            else:
+                betterprint.info('Using existing dense reconstruction')
         else:
             betterprint.warn('patch_match_stereo not found; skipping dense reconstruction.\n'
                              '       This probably means pycolmap wasn\'t compiled from source.')
@@ -514,17 +613,42 @@ class HlocSfm:
         """
         Runs the selected SfM pipeline on a set of images.
         """
-        # Validation
+        # Validation and Preparation
         self.validate_image_filenames()
+
+        skip_steps = self.check_existing_outputs()
 
         # Structure-from-Motion
         ts = time()
 
-        self.retrieve_image_pairs()
-        self.extract_and_match_features()
-        self.perform_sparse_reconstruction()
-        self.generate_visualizations()
-        self.perform_dense_reconstruction()
+        if not skip_steps['retrieve']:
+            self.retrieve_image_pairs()
+        else:
+            betterprint.info('Skipping image retrieval (using existing pairs file)')
+
+        if not skip_steps['extract'] or not skip_steps['match']:
+            self.extract_and_match_features(skip_extract=skip_steps['extract'], skip_match=skip_steps['match'])
+        else:
+            betterprint.info('Skipping feature extraction and matching (using existing databases)')
+
+        if not skip_steps['sparse']:
+            self.perform_sparse_reconstruction()
+        else:
+            betterprint.info('Skipping sparse reconstruction (using existing model)')
+
+        if not skip_steps['visualize']:
+            self.generate_visualizations()
+        else:
+            betterprint.info('Skipping visualization generation (using existing visualizations)')
+
+        if not skip_steps['undistort'] or not skip_steps['stereo'] or not skip_steps['fusion']:
+            self.perform_dense_reconstruction(
+                skip_undistort=skip_steps['undistort'],
+                skip_stereo=skip_steps['stereo'],
+                skip_fusion=skip_steps['fusion']
+            )
+        else:
+            betterprint.info('Skipping dense reconstruction (using existing results)')
 
         self.t_total = str(timedelta(seconds=(time()-ts)))
         
@@ -621,8 +745,8 @@ class HlocSfm:
 
 
 if __name__ == '__main__':
-    i, o, r, f, m, q = parse_args(sys.argv[1:])
-    hloc_sfm = HlocSfm(i, o, r, f, m)
+    i, o, force, r, f, m, q = parse_args(sys.argv[1:])
+    hloc_sfm = HlocSfm(i, o, force, r, f, m)
     hloc_sfm.main()
     if q:
         hloc_sfm.localize(q)
