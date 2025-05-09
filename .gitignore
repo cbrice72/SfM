@@ -319,11 +319,12 @@ __pycache__/
 COLMAP-*/*
 
 # Only include lightweight outputs from hloc_sfm.py
-scripts/outputs/*
-!.txt
-!.gif
-!.pdf
-!.html
+scripts/outputs/**
+!scripts/outputs/*/
+!scripts/outputs/**/*.txt
+!scripts/outputs/**/*.gif
+!scripts/outputs/**/*.pdf
+!scripts/outputs/**/*.html
 
 # Output from combine_frames.py and realsense_video_extractor.py
 scripts/out_png/**
