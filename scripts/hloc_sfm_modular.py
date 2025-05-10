@@ -562,16 +562,13 @@ class HlocSfm:
                 ts = time()
                 betterprint.info('Running stereo matching...')
 
-                options = {
-                    'geom_consistency': True,
-                    'filter': True,
-                    'min_triangulation_angle': 1.0,  # lower = more points
-                    'incident_angle_sigma': 15,      # higher = more tolerance
-                    'num_samples': 15,               # higher = more robust matching
-                    'num_iterations': 5              # higher = better results
-                }
-
-                pycolmap.patch_match_stereo(self.mvs_dir, options=options)
+                # Here, we cap the max image size at a standard 1280 (i.e., 720p)
+                # so that patch_match is more tolerant of small discrepancies
+                pycolmap.patch_match_stereo(self.mvs_dir,
+                                            options={'geom_consistency': True,
+                                                     'filter': True,
+                                                     'allow_missing_files': True,
+                                                     'max_image_size': 1280})
 
                 self.t_stereo = str(timedelta(seconds=(time()-ts)))
             else:
