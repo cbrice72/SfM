@@ -89,7 +89,7 @@ def parse_args(argv):
     Parses and validates input arguments for this script.
     """
     # Default args
-    image_dir = Path('')
+    image_dir = None
     output_dir = ''
     use_defaults = False
     force_reprocess = False
@@ -231,7 +231,7 @@ def parse_args(argv):
                 matching_type = sel
                 matching_type_provided = True
 
-    return image_dir, output_dir, retrieval_type, feature_type, matching_type, force_reprocess, query
+    return image_dir, output_dir, force_reprocess, retrieval_type, feature_type, matching_type, query
 
 
 class HlocSfm:
@@ -307,20 +307,20 @@ class HlocSfm:
 
         # Check for existing database files
         if self.sfm_pairs.exists():
-            betterprint.info(f'Found existing pairs file: {self.sfm_pairs}')
+            #betterprint.info(f'Found existing pairs file: {self.sfm_pairs}')
             skip_steps['retrieve'] = True
             
         if self.features.exists():
-            betterprint.info(f'Found existing features database: {self.features}')
+            #betterprint.info(f'Found existing features database: {self.features}')
             skip_steps['extract'] = True
             
         if self.matches.exists():
-            betterprint.info(f'Found existing matches database: {self.matches}')
+            #betterprint.info(f'Found existing matches database: {self.matches}')
             skip_steps['match'] = True
             
         # Check for existing sparse reconstruction and try to load it
         if self.sfm_dir.exists() and (self.sfm_dir / 'images.bin').exists() and (self.sfm_dir / 'points3D.bin').exists():
-            betterprint.info(f'Found existing sparse reconstruction: {self.sfm_dir}')
+            #betterprint.info(f'Found existing sparse reconstruction: {self.sfm_dir}')
             try:
                 self.model = pycolmap.Reconstruction(self.sfm_dir)
                 betterprint.info(f'Successfully loaded existing model with {len(self.model.images)} images and {len(self.model.points3D)} points')
@@ -331,20 +331,20 @@ class HlocSfm:
         
         # Check for existing visualizations
         if (self.vis_dir / '3D-sparse.ply').exists() or (self.vis_dir / '3D-sparse.html').exists():
-            betterprint.info(f'Found existing visualizations: {self.vis_dir}')
+            #betterprint.info(f'Found existing visualizations: {self.vis_dir}')
             skip_steps['visualize'] = True
             
         # Check for existing dense reconstruction steps
         if (self.mvs_dir / 'images').exists() and (self.mvs_dir / 'sparse').exists():
-            betterprint.info(f'Found existing undistorted images: {self.mvs_dir}')
+            #betterprint.info(f'Found existing undistorted images: {self.mvs_dir}')
             skip_steps['undistort'] = True
             
         if (self.mvs_dir / 'stereo').exists() and list((self.mvs_dir / 'stereo').glob('*.bin')):
-            betterprint.info(f'Found existing stereo results: {self.mvs_dir / "stereo"}')
+            #betterprint.info(f'Found existing stereo results: {self.mvs_dir / "stereo"}')
             skip_steps['stereo'] = True
             
         if (self.vis_dir / '3D-dense.ply').exists():
-            betterprint.info(f'Found existing dense reconstruction: {self.vis_dir / "3D-dense.ply"}')
+            #betterprint.info(f'Found existing dense reconstruction: {self.vis_dir / "3D-dense.ply"}')
             skip_steps['fusion'] = True
             
         return skip_steps
@@ -562,9 +562,16 @@ class HlocSfm:
                 ts = time()
                 betterprint.info('Running stereo matching...')
 
-                pycolmap.patch_match_stereo(self.mvs_dir,
-                                            options={'geom_consistency': True,
-                                                     'filter': True})
+                options = {
+                    'geom_consistency': True,
+                    'filter': True,
+                    'min_triangulation_angle': 1.0,  # lower = more points
+                    'incident_angle_sigma': 15,      # higher = more tolerance
+                    'num_samples': 15,               # higher = more robust matching
+                    'num_iterations': 5              # higher = better results
+                }
+
+                pycolmap.patch_match_stereo(self.mvs_dir, options=options)
 
                 self.t_stereo = str(timedelta(seconds=(time()-ts)))
             else:
@@ -639,7 +646,7 @@ class HlocSfm:
         if not skip_steps['visualize']:
             self.generate_visualizations()
         else:
-            betterprint.info('Skipping visualization generation (using existing visualizations)')
+            betterprint.info('Skipping visualization generation (already generated)')
 
         if not skip_steps['undistort'] or not skip_steps['stereo'] or not skip_steps['fusion']:
             self.perform_dense_reconstruction(
