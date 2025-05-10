@@ -88,7 +88,7 @@ def parse_args(argv):
     Parses and validates input arguments for this script.
     """
     # Default args
-    image_dir = Path('')
+    image_dir = None
     output_dir = ''
     use_defaults = False
     retrieval_type = 'netvlad'
