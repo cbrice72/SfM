@@ -24,6 +24,7 @@ This document explains how to use [CloudCompare](https://www.danielgm.net/cc/) t
 1. In the DB Tree tab, select both the to-be-aligned cloud and the reference cloud that will be used as "ground truth".
 2. Click "Tools" -> "Registration" -> "Fine registration (ICP)".
 3. You can tell CloudCompare to iterate `n` times, or until the RMS difference is sufficiently small (default: `1.0e-5`). Once you click "OK", alignment will be carried out automatically.
+    - If the scale still looks off after the rough alignment, make sure `adjust scale` is checked before proceeding!
 
 ## Quantitative Comparison
 
