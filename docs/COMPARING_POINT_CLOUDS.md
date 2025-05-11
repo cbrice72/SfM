@@ -45,4 +45,5 @@ This document explains how to use [CloudCompare](https://www.danielgm.net/cc/) t
     - Ctrl + Shift + Mouse wheel: adjust Far Clipping Depth
 2. Select all viewports and click "Plugins" -> "Animation".
 3. Specify your animation duration (optionally: duration of steps between viewports), frame rate, and bitrate. For the latter two, >= 30 fps and 100,000 kbps are recommended (the plugin will compress the file size anyways).
+    - If render time isn't an issue, use a higher "super resolution" of 2 or 3 to generate a smoother animation.
 4. Click "Render" (do NOT click "OK", as this won't create the animation!). To ensure CloudCompare has enough computational power to process it, it's recommended that you don't do anything in the background until it's done.
