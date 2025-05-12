@@ -28,12 +28,12 @@ This document explains how to use [CloudCompare](https://www.danielgm.net/cc/) t
 
 ## Quantitative Comparison
 
-1. Click "Tools" -> "Distances" -> "Cloud/Cloud Dist", and ensure that the compared and reference clouds are correct.
+1. Select two clouds. Click "Tools" -> "Distances" -> "Cloud/Cloud Dist", and ensure that the compared and reference clouds are correct.
 2. You can leave the "Octree level" on `AUTO`, although 8 or higher is recommended.
 3. The color of the compared cloud will change to a scalar, where BLUE = nearest and RED = furthest. The Console tab will show the mean distance and standard deviation.
     - To better visualize small differences, click on the compared cloud in the DB Tree tab, then in Properties scroll down to "SF display params". Click on the Parameters tab and select "log scale".
-4. Click "Tools" -> "Statistics" -> "Compute stat. params (active SF)", and select a `Weibull` distribution.
-    - If you want to compare multiple Weibull PDFs, move on to the next step. You should jot down the `a`, `b` and `shift` parameters at the top of the graph. Also, export the graph values to a CSV by clicking the green "CSV" icon on the right of the pop-up graph.
+4. Select the compared cloud. Click "Tools" -> "Statistics" -> "Compute stat. params (active SF)", and select `Weibull` distribution.
+    - If you want to compare multiple Weibull PDFs, move on to the next step. Jot down the `a`, `b` and `shift` parameters at the top of the graph and export the graph values to a CSV by clicking the green "CSV" icon on the right of the pop-up graph.
 5. Use the MATLAB script `LIBRA_MATLAB/analysis/compare_weibulls.m` to generate a single graph comparing multiple Weibull PDFs. Note that you will need to add filepaths and parameters in the `SETUP` section.
 
 ## Creating Visualizations
