@@ -51,16 +51,16 @@ from hloc.utils import viz, viz_3d
 
 
 # For ease of use
-input_shortcuts = {'mikan': '/mnt/d/LIBRA Archive/2023-12-13_SfM-Example/n60/images/',
-                   'ambient-z': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/a_Z-only/images/',
-                   'ambient-y': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/b_Y-only/images/',
-                   'ambient-yz': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/c_Y-and-Z/images/',
-                   'flash-z': '/mnt/d/LIBRA Archive/2024-01-24_Captures-for-SfM/with-flashlight/a_Z-only/images/',
-                   'takahashi-1': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_2/n1/images/',
-                   'takahashi-2': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_3/n1/images/',
-                   'takahashi-combined': '/mnt/d/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/combined/n1/images/',
-                   'rtab-control': '/mnt/d/LIBRA Archive/2025-04-25 LIBRA-I RTAB-Map (RealSense only)/maps/ground-truth_frames/images/',
-                   'rtab-rgbd': '/mnt/d/LIBRA Archive/2025-04-25 LIBRA-I RTAB-Map (RealSense only)/bags/n30/images/'}
+input_shortcuts = {'mikan': '/mnt/e/LIBRA Archive/2023-12-13_SfM-Example/n60/images/',
+                   'ambient-z': '/mnt/e/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/a_Z-only/images/',
+                   'ambient-y': '/mnt/e/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/b_Y-only/images/',
+                   'ambient-yz': '/mnt/e/LIBRA Archive/2024-01-24_Captures-for-SfM/no-flashlight/c_Y-and-Z/images/',
+                   'flash-z': '/mnt/e/LIBRA Archive/2024-01-24_Captures-for-SfM/with-flashlight/a_Z-only/images/',
+                   'takahashi-1': '/mnt/e/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_2/n1/images/',
+                   'takahashi-2': '/mnt/e/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/vid_camera_3/n1/images/',
+                   'takahashi-combined': '/mnt/e/LIBRA Archive/2024-03-12_Takahashi-Collab_(ultrasonic-sensor)/combined/n1/images/',
+                   'rtab-control': '/mnt/e/LIBRA Archive/2025-04-25 LIBRA-I RTAB-Map (RealSense only)/maps/ground-truth_frames/images/',
+                   'rtab-rgbd': '/mnt/e/LIBRA Archive/2025-04-25 LIBRA-I RTAB-Map (RealSense only)/bags/n30/images/'}
 
 # Switch between hloc's pyplot-based export into .html and COLMAP's export into .ply
 use_colmap_3d_export = True
