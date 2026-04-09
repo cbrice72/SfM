@@ -34,7 +34,7 @@ Project link: [https://github.com/christian-brice/SfM](https://github.com/christ
 ### *OS & Software*
 
 | | Minimum | Recommended |
-|---|---|---|
+| --- | --- | --- |
 | **Operating System** | Ubuntu 22.04<br>(Jammy package base) | Ubuntu 22.04<br>(Jammy package base) |
 | **Python 3** | 3.8.0 | >= 3.10.0 |
 
@@ -61,7 +61,7 @@ python3 hloc_sfm.py -i mikan --use-defaults
 Combine sequential frames into a video.
 
 |Input|Output|
-|---|---|
+| --- | --- |
 |Folder containing images|`*_combined.mp4` video file|
 
 ```bash
@@ -76,7 +76,7 @@ python3 combine_frames.py -h
 Extract frames from a ROS2-bag at a certain interval.
 
 |Input|Output|
-|---|---|
+| --- | --- |
 |Path to rosbag (directory)|`images/` folder wth frames<br>(same directory as input)|
 |Image topic<br>(e.g., `/camera/color/image_raw`)||
 
@@ -92,7 +92,7 @@ python3 extract_frames_rosbag.py -h
 Extract frames from a video at a certain interval.
 
 |Input|Output|
-|---|---|
+| --- | --- |
 |Video file<br>(`.mp4`, `.avi`, `.mov`, etc.)|`images/` folder wth frames<br>(same directory as input)|
 |Desired capture interval<br>(lower = more frames)||
 
@@ -108,7 +108,7 @@ python3 extract_frames_video.py -h
 LIBRA project SfM pipeline using hloc.
 
 |Input|Output (in `outputs/`)|
-|---|---|
+| --- | --- |
 |Folder containing images|COLMAP model (`sfm_*/`) |
 ||2D visualizations (`.pdf`)<br>(point depth, tracklength, visibility)|
 ||3D sparse reconstruction (`.ply`)|
@@ -129,7 +129,7 @@ python3 hloc_sfm.py -h
 Creates a turntable-like GIF of a 3D model (`.ply`).
 
 |Input|Output|
-|---|---|
+| --- | --- |
 |`.ply` 3D data file|`.gif` animation<br>(same directory as input)|
 
 ```bash
@@ -146,7 +146,7 @@ The script and command-line arguments are hard-coded in this file to
 improve management of options for larger iterations (see `shortcuts`).
 
 |Input|Output|
-|---|---|
+| --- | --- |
 |None<br>(user is prompted to<br>select a shortcut)|Depends on script|
 
 ```bash
@@ -163,7 +163,7 @@ Extracts RGB and depth videos from rosbags created using Intel RealSense D4xx ca
 > **NOTE:** will not work on WSL2 (although I only tested on WSL2, I feel like it should work on regular Linux/Ubuntu, e.g., in a VM). See [rs-convert](#rs-convertrosbagのコンバーター) for an alternative.
 
 |Input|Output (in `outputs/`)|
-|---|---|
+| --- | --- |
 |Rosbag (`.bag`)|Color video file (`*_rgb.avi`)|
 ||TODO (`*_depth.avi`)|
 
@@ -179,7 +179,7 @@ python3 realsense_video_extractor.py -h
 Sample images in a directory at a set interval. This is essentially the same logic as `extract_frames.py`, except it works with images that have already been extracted from a rosbag.
 
 |Input|Output|
-|---|---|
+| --- | --- |
 |Folder containing images|`images/` folder wth frames<br>(same directory as input)|
 |Desired capture interval<br>(lower = more frames)||
 

@@ -18,7 +18,7 @@ This document lists the necessary steps to set up a Linux (Ubuntu 22.04) develop
 You may set up a development environment in either a Virtual Machine (VM) or Windows Subsystem for Linux (WSL). There are a few differences you should be aware of.
 
 | | Ability | Environment | USB Support | Shared Folder Support |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **VM** | Full-featured | Runs in separate environment | Select PC or VM on plug-in | Non-native; enable in VMWare settings + install [open-vm-tools](https://kb.vmware.com/s/article/2073803) |
 | **WSL** | Lightweight | Runs natively in Windows | Non-native; install [USBIPD](https://learn.microsoft.com/en-us/windows/wsl/connect-usb) + use every time |  Windows `C:\` drive located at `/mnt/c` |
 

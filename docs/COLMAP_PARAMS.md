@@ -11,14 +11,14 @@ TODO: add command-line version of each setting
 ### *Feature Extraction*
 
 | Parameter | GUI | Command-line |
-|---|---|---|
+| --- | --- | --- |
 | Camera model | SIMPLE_PINHOLE | |
 | Shared for all images | true | |
 
 ### *Feature Matching*
 
 | Parameter | GUI | Command-line |
-|---|---|---|
+| --- | --- | --- |
 | Method | Exhaustive | |
 
 #### **Exhaustive Matching**

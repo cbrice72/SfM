@@ -35,7 +35,7 @@ jupyter lab
 ```
 
 |Notebook|Description|
-|---|---|
+| --- | --- |
 |`demo.ipynb`|3D map creation and subsequent localization of arbitrary image; i.e., figuring out where it was taken in relation to the map.|
 |`pipeline_Aachen.ipynb`|Pipeline for outdoor (day/night) localization, given an existing [NVM](http://ccwu.me/vsfm/index.html) database.|
 |`pipeline_InLoc.ipynb`|Pipeline for indoor localization, given an existing [NVM](http://ccwu.me/vsfm/index.html) database.|
@@ -106,7 +106,7 @@ reconstruction.main(..., mapper_options=dict(ba_refine_focal_length=False, ba_re
 ### *Supported Pipeline Configurations*
 
 |Image Retrieval|Feature Extraction|Feature Matching|
-|---|---|---|
+| --- | --- | --- |
 |`dir`<br>(extract_features.py)<br>[AP-GeM/DIR](https://github.com/naver/deep-image-retrieval)|`superpoint_aachen`<br>(extract_features.py)<br>[SuperPoint](https://arxiv.org/abs/1712.07629) w/ radius: 3, resize: 1024|`superpoint+lightglue`<br>(match_features.py)<br>[SuperPoint](https://arxiv.org/abs/1712.07629) + [LightGlue](https://github.com/cvg/LightGlue)|
 |`netvlad`<br>(extract_features.py)<br>[NetVLAD](https://arxiv.org/abs/1511.07247)|`superpoint_max`<br>(extract_features.py)<br>[SuperPoint](https://arxiv.org/abs/1712.07629) w/ radius: 3, resize: 1600 (forced)|`disk+lightglue`<br>(match_features.py)<br>[DISK](https://arxiv.org/abs/2006.13566) + [LightGlue](https://github.com/cvg/LightGlue)|
 |`openibl`<br>(extract_features.py)<br>[OpenIBL](https://github.com/yxgeee/OpenIBL)|`superpoint_inloc`<br>(extract_features.py)<br>[SuperPoint](https://arxiv.org/abs/1712.07629) w/ radius: 4, resize 1600|`superglue`<br>(match_features.py)<br>[SuperGlue](https://arxiv.org/abs/1911.11763) w/ 50 iterations|
@@ -124,7 +124,7 @@ reconstruction.main(..., mapper_options=dict(ba_refine_focal_length=False, ba_re
 Further reading: <https://colmap.github.io/cameras.html>
 
 |Model|Parameters|Notes|
-|---|---|---|
+| --- | --- | --- |
 |`SIMPLE_PINHOLE`|f, cx, cy|No Distortion is assumed. Only focal length and principal point is modeled.|
 |`PINHOLE`|fx, fy, cx, cy|No Distortion is assumed. Only focal length and principal point is modeled.|
 |`SIMPLE_RADIAL`|f, cx, cy, k|Simple camera model with **one focal length** and **one radial distortion** parameter.|
