@@ -212,7 +212,7 @@ def extract_frames_rosbag(bag_path, topic_name, out_dir, interval, num_jobs):
         chunk_start = start_time + (i * chunk_size)
         chunk_end = chunk_start + chunk_size - 1 if i < num_jobs - 1 else end_time
         chunks.append((i, chunk_start, chunk_end))
-        print(f'  Chunk #{i}: {ns_to_mmss(chunk_start-start_time)}-{ns_to_mmss(chunk_end-start_time)}')
+        print(f'  Chunk #{i+1}: {ns_to_mmss(chunk_start-start_time)}-{ns_to_mmss(chunk_end-start_time)}')
 
     t_start = time.time()  # log start time
 
