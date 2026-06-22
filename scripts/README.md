@@ -7,29 +7,29 @@ Project link: [https://github.com/christian-brice/SfM](https://github.com/christ
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [Requirements・要件](#requirements要件)
+- [Requirements](#requirements)
     - [*OS \& Software*](#os--software)
     - [*Setup*](#setup)
-- [Usage・使い方](#usage使い方)
-    - [*combine\_frames.py・連続画像からビデオを作成する*](#combine_framespy連続画像からビデオを作成する)
-    - [*extract\_frames\_rosbag.py・ROS2-bagから連続画像を抽出する*](#extract_frames_rosbagpyros2-bagから連続画像を抽出する)
-    - [*extract\_frames\_video.py・ビデオから連続画像を抽出する*](#extract_frames_videopyビデオから連続画像を抽出する)
-    - [*hloc\_sfm.py・メインSfMパイプライン*](#hloc_sfmpyメインsfmパイプライン)
-    - [*make\_turntable.py・3Dモデルの回転GIFを作る*](#make_turntablepy3dモデルの回転gifを作る)
-    - [*multirun\_script.py・スクリプトを連続して複数回実行する*](#multirun_scriptpyスクリプトを連続して複数回実行する)
-    - [*realsense\_video\_writer.py・RealSenseカメラのRGB-Dストリームを保存*](#realsense_video_writerpyrealsenseカメラのrgb-dストリームを保存)
-    - [*samples\_frames.py・ディレクトリから画像をサンプル*](#samples_framespyディレクトリから画像をサンプル)
-- [Third-party Apps・サードパーティー](#third-party-appsサードパーティー)
-    - [*rs-convert・rosbagのコンバーター*](#rs-convertrosbagのコンバーター)
-    - [*CloudCompare・3D点群比較用*](#cloudcompare3d点群比較用)
-- [Documentation・説明書](#documentation説明書)
-- [About Us・メンバー](#about-usメンバー)
-- [Contributing・Gitとの連携](#contributinggitとの連携)
-    - [*Giving proxy access to Git・Gitにプロキシアクセス*](#giving-proxy-access-to-gitgitにプロキシアクセス)
-    - [*Accessing the Code・コードへのアクセス*](#accessing-the-codeコードへのアクセス)
-- [Troubleshooting・トラブルシューティング](#troubleshootingトラブルシューティング)
+- [Usage](#usage)
+    - [*combine\_frames.py*](#combine_framespy)
+    - [*extract\_frames\_rosbag.py*](#extract_frames_rosbagpy)
+    - [*extract\_frames\_video.py*](#extract_frames_videopy)
+    - [*hloc\_sfm.py*](#hloc_sfmpy)
+    - [*make\_turntable.py*](#make_turntablepy)
+    - [*multirun\_script.py*](#multirun_scriptpy)
+    - [*realsense\_video\_writer.py*](#realsense_video_writerpy)
+    - [*samples\_frames.py*](#samples_framespy)
+- [Third-party Apps](#third-party-apps)
+    - [*rs-convert*](#rs-convert)
+    - [*CloudCompare*](#cloudcompare)
+- [Documentation](#documentation)
+- [About Us](#about-us)
+- [Contributing](#contributing)
+    - [*Giving proxy access to Git*](#giving-proxy-access-to-git)
+    - [*Accessing the Code*](#accessing-the-code)
+- [Troubleshooting](#troubleshooting)
 
-## Requirements・要件
+## Requirements
 
 ### *OS & Software*
 
@@ -44,9 +44,9 @@ Overall, you should follow the instructions in [HLOC_README.md](../docs/HLOC_REA
 
 For RealSense-related software, you must first install the [Intel RealSense SDK 2.0](https://www.intelrealsense.com/sdk-2/).
 
-## Usage・使い方
+## Usage
 
-[hloc_sfm.py](#hloc_sfmpyメインsfmパイプライン) is the main script. To run the demo, enter the following in a terminal.
+[hloc_sfm.py](#hloc_sfmpy) is the main script. To run the demo, enter the following in a terminal.
 
 ```bash
 python3 hloc_sfm.py -i mikan --use-defaults
@@ -56,13 +56,13 @@ python3 hloc_sfm.py -i mikan --use-defaults
 
 <br>
 
-### *combine_frames.py・連続画像からビデオを作成する*
+### *combine_frames.py*
 
 Combine sequential frames into a video.
 
-|Input|Output|
+| Input | Output |
 | --- | --- |
-|Folder containing images|`*_combined.mp4` video file|
+| Folder containing images | `*_combined.mp4` video file |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -71,14 +71,14 @@ python3 combine_frames.py -h
 
 <br>
 
-### *extract_frames_rosbag.py・ROS2-bagから連続画像を抽出する*
+### *extract_frames_rosbag.py*
 
 Extract frames from a ROS2-bag at a certain interval.
 
-|Input|Output|
+| Input | Output |
 | --- | --- |
-|Path to rosbag (directory)|`images/` folder wth frames<br>(same directory as input)|
-|Image topic<br>(e.g., `/camera/color/image_raw`)||
+| Path to rosbag (directory) | `images/` folder wth frames<br>(same directory as input) |
+| Image topic<br>(e.g., `/camera/color/image_raw`) | |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -87,14 +87,14 @@ python3 extract_frames_rosbag.py -h
 
 <br>
 
-### *extract_frames_video.py・ビデオから連続画像を抽出する*
+### *extract_frames_video.py*
 
 Extract frames from a video at a certain interval.
 
-|Input|Output|
+| Input | Output |
 | --- | --- |
-|Video file<br>(`.mp4`, `.avi`, `.mov`, etc.)|`images/` folder wth frames<br>(same directory as input)|
-|Desired capture interval<br>(lower = more frames)||
+| Video file<br>(`.mp4`, `.avi`, `.mov`, etc.) | `images/` folder wth frames<br>(same directory as input) |
+| Desired capture interval<br>(lower = more frames) | |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -103,19 +103,19 @@ python3 extract_frames_video.py -h
 
 <br>
 
-### *hloc_sfm.py・メインSfMパイプライン*
+### *hloc_sfm.py*
 
 LIBRA project SfM pipeline using hloc.
 
-|Input|Output (in `outputs/`)|
+| Input | Output (in `outputs/`) |
 | --- | --- |
-|Folder containing images|COLMAP model (`sfm_*/`) |
-||2D visualizations (`.pdf`)<br>(point depth, tracklength, visibility)|
-||3D sparse reconstruction (`.ply`)|
-||3D sparse model turntable (`.gif`)|
-||3D dense reconstruction (`.ply`)|
-||Feature extraction & matching databases (`.h5`)|
-||Script execution summary (`summary-*.txt`)|
+| Folder containing images | COLMAP model (`sfm_*/`) |
+| | 2D visualizations (`.pdf`)<br>(point depth, tracklength, visibility) |
+| | 3D sparse reconstruction (`.ply`) |
+| | 3D sparse model turntable (`.gif`) |
+| | 3D dense reconstruction (`.ply`) |
+| | Feature extraction & matching databases (`.h5`) |
+| | Script execution summary (`summary-*.txt`) |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -124,13 +124,13 @@ python3 hloc_sfm.py -h
 
 <br>
 
-### *make_turntable.py・3Dモデルの回転GIFを作る*
+### *make_turntable.py*
 
 Creates a turntable-like GIF of a 3D model (`.ply`).
 
-|Input|Output|
+| Input | Output |
 | --- | --- |
-|`.ply` 3D data file|`.gif` animation<br>(same directory as input)|
+| `.ply` 3D data file | `.gif` animation<br>(same directory as input) |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -139,15 +139,15 @@ python3 make_turntable.py -h
 
 <br>
 
-### *multirun_script.py・スクリプトを連続して複数回実行する*
+### *multirun_script.py*
 
 Run a given Python script multiple times with fixed or iterative args.
 The script and command-line arguments are hard-coded in this file to
 improve management of options for larger iterations (see `shortcuts`).
 
-|Input|Output|
+| Input | Output |
 | --- | --- |
-|None<br>(user is prompted to<br>select a shortcut)|Depends on script|
+| None<br>(user is prompted to<br>select a shortcut) | Depends on script |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -156,16 +156,16 @@ python3 multirun_script.py -h
 
 <br>
 
-### *realsense_video_writer.py・RealSenseカメラのRGB-Dストリームを保存*
+### *realsense_video_writer.py*
 
 Extracts RGB and depth videos from rosbags created using Intel RealSense D4xx cameras.
 
-> **NOTE:** will not work on WSL2 (although I only tested on WSL2, I feel like it should work on regular Linux/Ubuntu, e.g., in a VM). See [rs-convert](#rs-convertrosbagのコンバーター) for an alternative.
+> **NOTE:** will not work on WSL2 (although I only tested on WSL2, I feel like it should work on regular Linux/Ubuntu, e.g., in a VM). See [rs-convert](#rs-convert) for an alternative.
 
-|Input|Output (in `outputs/`)|
+| Input | Output (in `outputs/`) |
 | --- | --- |
-|Rosbag (`.bag`)|Color video file (`*_rgb.avi`)|
-||TODO (`*_depth.avi`)|
+| Rosbag (`.bag`) | Color video file (`*_rgb.avi`) |
+| | TODO (`*_depth.avi`) |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -174,14 +174,14 @@ python3 realsense_video_extractor.py -h
 
 <br>
 
-### *samples_frames.py・ディレクトリから画像をサンプル*
+### *samples_frames.py*
 
 Sample images in a directory at a set interval. This is essentially the same logic as `extract_frames.py`, except it works with images that have already been extracted from a rosbag.
 
-|Input|Output|
+| Input | Output |
 | --- | --- |
-|Folder containing images|`images/` folder wth frames<br>(same directory as input)|
-|Desired capture interval<br>(lower = more frames)||
+| Folder containing images | `images/` folder wth frames<br>(same directory as input) |
+| Desired capture interval<br>(lower = more frames) | |
 
 ```bash
 # See help text for detailed explanation of usage and available options
@@ -190,9 +190,9 @@ python3 sample_frames.py -h
 
 <br><hr>
 
-## Third-party Apps・サードパーティー
+## Third-party Apps
 
-### *rs-convert・rosbagのコンバーター*
+### *rs-convert*
 
 Converts the rosbag (`.bag`) file output by the Intel RealSense Viewer into various filetypes (PNG, CSV, RAW, PLY, BIN, txt).
 
@@ -209,7 +209,7 @@ cd "C:\Program Files (x86)\Intel RealSense SDK 2.0\tools"
 
 <br>
 
-### *CloudCompare・3D点群比較用*
+### *CloudCompare*
 
 3D point cloud processing software for comparing two or more dense 3D points clouds.
 
@@ -217,19 +217,19 @@ For the project page, including downloads, see the [website](https://www.danielg
 
 <br><hr>
 
-## Documentation・説明書
+## Documentation
 
 See [INDEX.md](../INDEX.md) in the project root directory for a list of related SfM documentation.
 
-## About Us・メンバー
+## About Us
 
-**Christian Brice** ([email](mailto:brice.c.67b9@m.isct.ac.jp)) is a doctoral student in mechanical engineering at the Tokyo Institute of Technology. The *LIBRA-II* project is the focus of his doctoral studies.
+**Christian Brice** ([email](mailto:brice.c.67b9@m.isct.ac.jp)) is a doctoral student in mechanical engineering at the Tokyo Institute of Technology. The *LIBRA* project is the focus of his doctoral studies.
 
 The **[Gen Endo Laboratory](www.robotics.mech.e.titech.ac.jp/gendo/en/)** is affiliated with the Department of Mechanical Engineering at the Tokyo Institute of Technology.
 
-## Contributing・Gitとの連携
+## Contributing
 
-### *Giving proxy access to Git・Gitにプロキシアクセス*
+### *Giving proxy access to Git*
 
 If you'd like to pull/push to this repo from within a proxy, you must first add your proxy settings to Git. Enter the following command in a terminal (replacing the text in brackets).
 
@@ -237,7 +237,7 @@ If you'd like to pull/push to this repo from within a proxy, you must first add 
 git config --global http.proxy <address>:<port>
 ```
 
-### *Accessing the Code・コードへのアクセス*
+### *Accessing the Code*
 
 You can clone the repo either via a terminal or VS Code. If you're a beginner at Git, I recommend downloading VS Code and using its integrated "Source Control" tab.
 
@@ -249,6 +249,6 @@ https://github.com/christian-brice/SfM.git
 
 <br>
 
-## Troubleshooting・トラブルシューティング
+## Troubleshooting
 
 ...
