@@ -28,6 +28,7 @@ import betterprint  # local module
 from make_turntable import make_turntable  # local module
 
 from datetime import timedelta
+from enum import Enum, auto
 import getopt
 from math import floor
 import matplotlib.pyplot as plt
@@ -234,6 +235,19 @@ def parse_args(argv):
     return image_dir, output_dir, force_reprocess, retrieval_type, feature_type, matching_type, query
 
 
+class PipelineStep(Enum):
+    RETRIEVE = auto()
+    EXTRACT = auto()
+    MATCH = auto()
+    SPARSE = auto()
+    VISUALIZE = auto()
+    UNDISTORT = auto()
+    STEREO = auto()
+    FUSION = auto()
+    MESH_POISSON = auto()
+    MESH_DELAUNAY = auto()
+
+
 class HlocSfm:
     def __init__(self, i, o, force, r, f, m):
         # Initialize input arg-based member variables
@@ -269,6 +283,7 @@ class HlocSfm:
         self.model = None
         self.global_descriptors = None
         self.num_images = len(self.references)
+        self.skip_steps = {}
 
         # For calculating overall script runtime
         self.t_total = 0
@@ -282,74 +297,64 @@ class HlocSfm:
         self.t_undistort = '---'
         self.t_stereo = '---'
         self.t_fusion = '---'
+        self.t_mesh = '---'
 
-    def check_existing_outputs(self):
+    def _check_existing_outputs(self):
         """
         Checks whether any steps have already been computed and, if so,
         instructs the rest of the script to use the existing data.
         Useful when execution fails partway through large datasets.
         """
-        skip_steps = {
-            'retrieve': False,
-            'extract': False, 
-            'match': False,
-            'sparse': False,
-            'visualize': False,
-            'undistort': False,
-            'stereo': False,
-            'fusion': False
-        }
+        self.skip_steps = {step: False for step in PipelineStep}
 
         # Exit early if user requested reprocessing
         if self.force_reprocess:
             betterprint.warn('Force reprocessing flag set, all steps will be executed')
-            return skip_steps
+            return
 
-        # Check for existing database files
+        # Check for database files
         if self.sfm_pairs.exists():
-            #betterprint.info(f'Found existing pairs file: {self.sfm_pairs}')
-            skip_steps['retrieve'] = True
-            
+            self.skip_steps[PipelineStep.RETRIEVE] = True
         if self.features.exists():
-            #betterprint.info(f'Found existing features database: {self.features}')
-            skip_steps['extract'] = True
-            
+            self.skip_steps[PipelineStep.EXTRACT] = True
         if self.matches.exists():
-            #betterprint.info(f'Found existing matches database: {self.matches}')
-            skip_steps['match'] = True
+            self.skip_steps[PipelineStep.MATCH] = True
             
-        # Check for existing sparse reconstruction and try to load it
+        # Check for sparse reconstruction and try to load it
         if self.sfm_dir.exists() and (self.sfm_dir / 'images.bin').exists() and (self.sfm_dir / 'points3D.bin').exists():
-            #betterprint.info(f'Found existing sparse reconstruction: {self.sfm_dir}')
             try:
                 self.model = pycolmap.Reconstruction(self.sfm_dir)
                 betterprint.info(f'Successfully loaded existing model with {len(self.model.images)} images and {len(self.model.points3D)} points')
-                skip_steps['sparse'] = True
+                self.skip_steps[PipelineStep.SPARSE] = True
             except Exception as e:
                 betterprint.err(f'Failed to load existing model: {e}')
-                skip_steps['sparse'] = False
+                self.skip_steps[PipelineStep.SPARSE] = False
         
-        # Check for existing visualizations
+        # Check whether sample visualizations were generated
         if (self.vis_dir / '3D-sparse.ply').exists() or (self.vis_dir / '3D-sparse.html').exists():
-            #betterprint.info(f'Found existing visualizations: {self.vis_dir}')
-            skip_steps['visualize'] = True
+            self.skip_steps[PipelineStep.VISUALIZE] = True
             
-        # Check for existing dense reconstruction steps
+        # Check all dense reconstruction steps
         if (self.mvs_dir / 'images').exists() and (self.mvs_dir / 'sparse').exists():
-            #betterprint.info(f'Found existing undistorted images: {self.mvs_dir}')
-            skip_steps['undistort'] = True
-            
-        if (self.mvs_dir / 'stereo').exists() and list((self.mvs_dir / 'stereo').glob('*.bin')):
-            #betterprint.info(f'Found existing stereo results: {self.mvs_dir / "stereo"}')
-            skip_steps['stereo'] = True
-            
+            self.skip_steps[PipelineStep.UNDISTORT] = True
+        stereo_dir = self.mvs_dir / 'stereo'
+        if stereo_dir.exists():
+            has_maps = any((stereo_dir / 'depth_maps').glob('*.bin')) and any((stereo_dir / 'normal_maps').glob('*.bin'))
+            has_configs = (stereo_dir / 'fusion.cfg').exists() and (stereo_dir / 'patch-match.cfg').exists()
+            if has_maps and has_configs:
+                self.skip_steps[PipelineStep.STEREO] = True
         if (self.vis_dir / '3D-dense.ply').exists():
-            #betterprint.info(f'Found existing dense reconstruction: {self.vis_dir / "3D-dense.ply"}')
-            skip_steps['fusion'] = True
-            
-        return skip_steps
+            self.skip_steps[PipelineStep.FUSION] = True
 
-    def validate_image_filenames(self):
+        # Check whether each mesh was generated
+        if (self.vis_dir / 'mesh-poisson.ply').exists():
+            self.skip_steps[PipelineStep.MESH_POISSON] = True
+        if (self.vis_dir / 'mesh-delaunay.ply').exists():
+            self.skip_steps[PipelineStep.MESH_DELAUNAY] = True
+            
+        return self.skip_steps
+
+    def _validate_image_filenames(self):
         """
         Validates image filenames in the specified input directory.
         """        
@@ -397,10 +402,64 @@ class HlocSfm:
             betterprint.err("Please rename these files to remove spaces and special characters (example of valid filename: image_001.jpg).")
             sys.exit()
 
+    def _log_results(self):
+        """
+        Logs and prints reconstruction statistics.
+        """
+        betterprint.info('Done!')
+
+        # Print and log statistics
+        summary_reconstr = f'{self.model.summary()}\n'
+        summary_elapsed = ('Elapsed Time:              H:MM:SS.MS\n'
+                          f'	Image Retrieval    {self.t_retrieve}\n'
+                          f'	Feat. Extraction   {self.t_extract}\n'
+                          f'	Feat. Matching     {self.t_match}\n'
+                          f'	Sparse Reconstr.   {self.t_sparse}\n'
+                          f'	Visualizations     {self.t_visuals}\n'
+                          f'	Undistortion       {self.t_undistort}\n'
+                          f'	Stereo (MVS)       {self.t_stereo}\n'
+                          f'	Fusion (dense)     {self.t_fusion}\n'
+                          f'	Mesh Generation    {self.t_mesh}\n'
+                          f'	-----TOTAL-----    {self.t_total}\n')
+
+        betterprint.info(f'''===[ RESULTS ]===\n{
+                         summary_reconstr}\n{summary_elapsed}''')
+
+        with open(self.log_file, 'w') as f:
+            f.write(summary_reconstr)
+            f.write(summary_elapsed)
+
+    def main(self):
+        """
+        Runs the selected SfM pipeline on a set of images.
+        """
+        # Validation and Preparation
+        self._validate_image_filenames()
+        self._check_existing_outputs()
+
+        # Structure-from-Motion
+        ts = time()
+
+        self.retrieve_image_pairs()
+        self.extract_and_match_features()
+        self.perform_sparse_reconstruction()
+        self.generate_visualizations()
+        self.perform_dense_reconstruction()
+        self.generate_meshes()
+
+        self.t_total = str(timedelta(seconds=(time()-ts)))
+        
+        # Cleanup
+        self._log_results()
+
     def retrieve_image_pairs(self):
         """
         Finds image pairs via image retrieval (if dataset > 50 images).
         """
+        if self.skip_steps.get(PipelineStep.RETRIEVE):
+            betterprint.info('Using existing image pairs')
+            return
+        
         betterprint.info('Starting image retrieval...')
         sleep(1)
         ts = time()
@@ -420,11 +479,11 @@ class HlocSfm:
 
         self.t_retrieve = str(timedelta(seconds=(time()-ts)))
 
-    def extract_and_match_features(self, skip_extract=False, skip_match=False):
+    def extract_and_match_features(self):
         """
         Extracts and matches local features.
         """
-        if not skip_extract:
+        if not self.skip_steps[PipelineStep.EXTRACT]:
             betterprint.info('Starting feature extraction...')
             sleep(1)
             ts = time()
@@ -434,9 +493,9 @@ class HlocSfm:
 
             self.t_extract = str(timedelta(seconds=(time()-ts)))
         else:
-            betterprint.info('Using existing feature database')
+            betterprint.info('Using existing features database')
         
-        if not skip_match:
+        if not self.skip_steps[PipelineStep.MATCH]:
             betterprint.info('Starting feature matching...')
             sleep(1)
             ts = time()
@@ -457,6 +516,10 @@ class HlocSfm:
         """
         Performs sparse 3D reconstruction.
         """
+        if self.skip_steps.get(PipelineStep.SPARSE):
+            betterprint.info('Using existing sparse model')
+            return
+        
         betterprint.info('Starting sparse reconstruction...')
         sleep(1)
         ts = time()
@@ -476,6 +539,10 @@ class HlocSfm:
         """
         Generates 2D and 3D visualizations of the reconstruction.
         """
+        if self.skip_steps.get(PipelineStep.VISUALIZE):
+            betterprint.info('Skipping visualization generation (already generated)')
+            return
+        
         betterprint.info('Generating 2D visualizations...')
         print('       (a total of 15 visualizations will be generated; this will take a few minutes)')
         sleep(1)
@@ -536,142 +603,141 @@ class HlocSfm:
         
         self.t_visuals = str(timedelta(seconds=(time()-ts)))
 
-    def perform_dense_reconstruction(self, skip_undistort=False, skip_stereo=False, skip_fusion=False):
+    def perform_dense_reconstruction(self):
         """
         Performs dense 3D reconstruction (via COLMAP).
         """
-        # Dense 3D reconstruction (via COLMAP) -- longest step!
-        if "patch_match_stereo" in dir(pycolmap):  # only if compiled w/ CUDA
-            betterprint.info('Starting dense reconstruction...')
-            betterprint.warn(
-                'This step will take a LONG time!! You should probably find something else to do in the meantime.')
-            sleep(3)
-            ts = time()
-
-            # Cap the max image size at a standard 1280 pixels (i.e., 720p).
-            # This is mainly so stereo matching is more tolerant of small
-            # discrepancies, although it's also used by stereo fusion.
-            max_image_size = 1280
-
-            if not skip_undistort:
-                ts = time()
-                betterprint.info('Undistorting images...')
-
-                pycolmap.undistort_images(self.mvs_dir, self.sfm_dir, self.image_dir)
-
-                self.t_undistort = str(timedelta(seconds=(time()-ts)))
-            else:
-                betterprint.info('Using existing undistorted images')
-
-            if not skip_stereo:
-                ts = time()
-                betterprint.info('Running stereo matching...')
-
-                pycolmap.patch_match_stereo(
-                    self.mvs_dir,
-                    options={
-                        'max_image_size': max_image_size,
-                        'geom_consistency': True,
-                        'filter': True,
-                        'allow_missing_files': True,
-                    }
-                )
-
-                self.t_stereo = str(timedelta(seconds=(time()-ts)))
-            else:
-                betterprint.info('Using existing stereo results')
-
-            if not skip_fusion:
-                ts = time()
-                betterprint.info('Running stereo fusion...')
-
-                pycolmap.stereo_fusion(
-                    self.vis_dir / "3D-dense.ply",
-                    self.mvs_dir,
-                    options={
-                        'max_image_size': max_image_size,
-                        'cache_size': 16,
-                    }
-                )
-
-                self.t_fusion = str(timedelta(seconds=(time()-ts)))
-            else:
-                betterprint.info('Using existing dense reconstruction')
-        else:
+        if "patch_match_stereo" not in dir(pycolmap):  # only exists if compiled w/ CUDA
             betterprint.warn('patch_match_stereo not found; skipping dense reconstruction.\n'
-                             '       This probably means pycolmap wasn\'t compiled from source.')
-
-    def log_results(self):
-        """
-        Logs and prints reconstruction statistics.
-        """
-        betterprint.info('Done!')
-
-        # Print and log statistics
-        summary_reconstr = f'{self.model.summary()}\n'
-        summary_elapsed = ('Elapsed Time:              H:MM:SS.MS\n'
-                          f'	Image Retrieval    {self.t_retrieve}\n'
-                          f'	Feat. Extraction   {self.t_extract}\n'
-                          f'	Feat. Matching     {self.t_match}\n'
-                          f'	Sparse Reconstr.   {self.t_sparse}\n'
-                          f'	Visualizations     {self.t_visuals}\n'
-                          f'	Undistortion       {self.t_undistort}\n'
-                          f'	Stereo (MVS)       {self.t_stereo}\n'
-                          f'	Fusion (dense)     {self.t_fusion}\n'
-                          f'	-----TOTAL-----    {self.t_total}\n')
-
-        betterprint.info(f'''===[ RESULTS ]===\n{
-                         summary_reconstr}\n{summary_elapsed}''')
-
-        with open(self.log_file, 'w') as f:
-            f.write(summary_reconstr)
-            f.write(summary_elapsed)
-
-    def main(self):
-        """
-        Runs the selected SfM pipeline on a set of images.
-        """
-        # Validation and Preparation
-        self.validate_image_filenames()
-
-        skip_steps = self.check_existing_outputs()
-
-        # Structure-from-Motion
+                             '       This probably means pycolmap wasn\'t compiled from source,\n'
+                             '       or was not compiled with CUDA support.')
+            return
+        
+        # Dense 3D reconstruction (via COLMAP) -- longest step!
+        betterprint.info('Starting dense reconstruction...')
+        betterprint.warn(
+            'This step may take a LONG time!! You should probably find something else to do in the meantime.')
+        sleep(3)
         ts = time()
 
-        if not skip_steps['retrieve']:
-            self.retrieve_image_pairs()
-        else:
-            betterprint.info('Skipping image retrieval (using existing pairs file)')
+        # Cap the max image size at a standard 1280 pixels (i.e., 720p).
+        # This is mainly so stereo matching is more tolerant of small
+        # discrepancies, although it's also used by stereo fusion.
+        max_image_size = 1280
 
-        if not skip_steps['extract'] or not skip_steps['match']:
-            self.extract_and_match_features(skip_extract=skip_steps['extract'], skip_match=skip_steps['match'])
-        else:
-            betterprint.info('Skipping feature extraction and matching (using existing databases)')
+        if not self.skip_steps[PipelineStep.UNDISTORT]:
+            ts = time()
+            betterprint.info('Undistorting images...')
 
-        if not skip_steps['sparse']:
-            self.perform_sparse_reconstruction()
-        else:
-            betterprint.info('Skipping sparse reconstruction (using existing model)')
+            pycolmap.undistort_images(self.mvs_dir, self.sfm_dir, self.image_dir)
 
-        if not skip_steps['visualize']:
-            self.generate_visualizations()
+            self.t_undistort = str(timedelta(seconds=(time()-ts)))
         else:
-            betterprint.info('Skipping visualization generation (already generated)')
+            betterprint.info('Using existing undistorted images')
 
-        if not skip_steps['undistort'] or not skip_steps['stereo'] or not skip_steps['fusion']:
-            self.perform_dense_reconstruction(
-                skip_undistort=skip_steps['undistort'],
-                skip_stereo=skip_steps['stereo'],
-                skip_fusion=skip_steps['fusion']
+        if not self.skip_steps[PipelineStep.STEREO]:
+            ts = time()
+            betterprint.info('Running stereo matching...')
+
+            pycolmap.patch_match_stereo(
+                self.mvs_dir,
+                options={
+                    'max_image_size': max_image_size,
+                    'geom_consistency': True,
+                    'filter': True,
+                    'allow_missing_files': True,
+                }
             )
-        else:
-            betterprint.info('Skipping dense reconstruction (using existing results)')
 
-        self.t_total = str(timedelta(seconds=(time()-ts)))
+            self.t_stereo = str(timedelta(seconds=(time()-ts)))
+        else:
+            betterprint.info('Using existing stereo results')
+
+        if not self.skip_steps[PipelineStep.FUSION]:
+            ts = time()
+            betterprint.info('Running stereo fusion...')
+
+            pycolmap.stereo_fusion(
+                self.vis_dir / "3D-dense.ply",
+                self.mvs_dir,
+                options={
+                    'max_image_size': max_image_size,
+                    'cache_size': 12,  # gigabytes
+                }
+            )
+
+            self.t_fusion = str(timedelta(seconds=(time()-ts)))
+        else:
+            betterprint.info('Using existing dense reconstruction')
+            
+    def generate_meshes(self):
+        """
+        Generates 3D meshes from the dense point cloud.
+        """
+        self._generate_poisson_mesh()
+        self._generate_delaunay_mesh()
+
+    def _generate_poisson_mesh(self):
+        """
+        Generates a Poisson mesh from the dense point cloud.
         
-        # Cleanup
-        self.log_results()
+        @see https://hhoppe.com/poissonrecon.pdf
+        """
+        # Early exit cases
+        if self.skip_steps.get(PipelineStep.MESH_POISSON):
+            betterprint.info('Skipping Poisson meshing (already generated)')
+            return
+
+        if "poisson_meshing" not in dir(pycolmap):
+            betterprint.warn('poisson_meshing not found; skipping.')
+            return
+
+        # Generate mesh
+        input_ply = self.vis_dir / "3D-dense.ply"
+        output_ply = self.vis_dir / "3D-mesh-poisson.ply"
+
+        if not input_ply.exists():
+            betterprint.warn('Dense point cloud not found; skipping Poisson meshing.')
+            return
+
+        betterprint.info('Starting Poisson mesh generation...')
+        sleep(1)
+        ts = time()
+
+        pycolmap.poisson_meshing(input_ply, output_ply, options={'trim': 10.0})
+
+        self.t_mesh = str(timedelta(seconds=(time()-ts)))
+
+    def _generate_delaunay_mesh(self):
+        """
+        Generates a Delaunay mesh from the multi-view stereo workspace.
+
+        @see https://link.springer.com/chapter/10.1007/978-3-540-33259-6_6
+        """
+        # Early exit cases
+        if self.skip_steps.get(PipelineStep.MESH_DELAUNAY):
+            betterprint.info('Skipping Delaunay meshing (already generated)')
+            return
+
+        if "delaunay_meshing" not in dir(pycolmap):
+            betterprint.warn('delaunay_meshing not found; skipping.')
+            return
+
+        # Generate mesh
+        input_dir = self.mvs_dir
+        output_ply = self.vis_dir / "3D-mesh-delaunay.ply"
+
+        if not (input_dir / 'images').exists():
+            betterprint.warn('MVS workspace not found; skipping Delaunay meshing.')
+            return
+
+        betterprint.info('Starting Delaunay mesh generation...')
+        sleep(1)
+        ts = time()
+
+        pycolmap.delaunay_meshing(input_dir, output_ply)
+
+        self.t_delaunay = str(timedelta(seconds=(time()-ts)))
 
     def localize(self, query):
         """
