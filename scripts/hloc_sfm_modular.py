@@ -127,7 +127,7 @@ def parse_args(argv):
 
         # Output - Models & Databases Directory
         elif opt in ('-o', '--out'):
-            output_dir = Path(f'outputs/{arg}/').resolve()
+            output_dir = Path(arg).expanduser().resolve()
 
         # "Use Defaults" Flag
         elif opt in ('--use-defaults'):
