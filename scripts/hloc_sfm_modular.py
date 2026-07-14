@@ -548,6 +548,11 @@ class HlocSfm:
             sleep(3)
             ts = time()
 
+            # Cap the max image size at a standard 1280 pixels (i.e., 720p).
+            # This is mainly so stereo matching is more tolerant of small
+            # discrepancies, although it's also used by stereo fusion.
+            max_image_size = 1280
+
             if not skip_undistort:
                 ts = time()
                 betterprint.info('Undistorting images...')
@@ -562,13 +567,15 @@ class HlocSfm:
                 ts = time()
                 betterprint.info('Running stereo matching...')
 
-                # Here, we cap the max image size at a standard 1280 (i.e., 720p)
-                # so that patch_match is more tolerant of small discrepancies
-                pycolmap.patch_match_stereo(self.mvs_dir,
-                                            options={'geom_consistency': True,
-                                                     'filter': True,
-                                                     'allow_missing_files': True,
-                                                     'max_image_size': 1280})
+                pycolmap.patch_match_stereo(
+                    self.mvs_dir,
+                    options={
+                        'max_image_size': max_image_size,
+                        'geom_consistency': True,
+                        'filter': True,
+                        'allow_missing_files': True,
+                    }
+                )
 
                 self.t_stereo = str(timedelta(seconds=(time()-ts)))
             else:
@@ -578,7 +585,14 @@ class HlocSfm:
                 ts = time()
                 betterprint.info('Running stereo fusion...')
 
-                pycolmap.stereo_fusion(self.vis_dir / "3D-dense.ply", self.mvs_dir)
+                pycolmap.stereo_fusion(
+                    self.vis_dir / "3D-dense.ply",
+                    self.mvs_dir,
+                    options={
+                        'max_image_size': max_image_size,
+                        'cache_size': 16,
+                    }
+                )
 
                 self.t_fusion = str(timedelta(seconds=(time()-ts)))
             else:
