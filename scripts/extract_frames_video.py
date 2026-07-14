@@ -148,7 +148,6 @@ def extract_frames_video(vid_path, proj_dir, interval):
     # Cleanup
     print()  # newline after 'Progress' output
     vid.release()
-    cv2.destroyAllWindows()
 
     betterprint.info(
         f'Processed {frame_count} frames (saved {saved_count} @ n={interval}) in {t_end - t_start:.2f} s!')
