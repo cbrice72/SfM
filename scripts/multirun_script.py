@@ -37,11 +37,11 @@ shortcuts = {
         {"-n": "10"},
         ["-i"],
         [
-            ["/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/baseline/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/darkness/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-90/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-45/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-0/color/extracted"
+            ["/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/baseline/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/darkness/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-90/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-45/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-0/color/extracted"
             ]
         ]),
     "2024-10-1 Videos": Shortcut(
@@ -49,16 +49,16 @@ shortcuts = {
         {},
         ["-i"],
         [
-            ["/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/baseline/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/baseline/depth/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/darkness/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/darkness/depth/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-90/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-90/depth/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-45/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-45/depth/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-0/color/extracted",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-0/depth/extracted"
+            ["/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/baseline/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/baseline/depth/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/darkness/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/darkness/depth/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-90/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-90/depth/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-45/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-45/depth/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-0/color/extracted",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-0/depth/extracted"
             ]
         ]),
     "2024-10-1 SfM": Shortcut(
@@ -66,11 +66,11 @@ shortcuts = {
         {"--use-defaults": ""},
         ["-i"],
         [
-            ["/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/baseline/color/images",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/darkness/color/images",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-90/color/images",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-45/color/images",
-            "/mnt/c/Users/brice/Desktop/Projects/LIBRA/Archive/2024-10-01_RealSense-Indirect-Lighting-Experiment/light-0/color/images"
+            ["/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/baseline/color/images",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/darkness/color/images",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-90/color/images",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-45/color/images",
+            "/mnt/e/LIBRA Archive/General/2024-10-01 RealSense Indirect Lighting Experiment/data/light-0/color/images"
             ]
         ])
 }
